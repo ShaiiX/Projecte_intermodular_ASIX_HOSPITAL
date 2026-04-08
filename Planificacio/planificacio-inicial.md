@@ -1,0 +1,2 @@
+# Planificació inicial
+
