@@ -22,7 +22,9 @@ Es programen diferents tasques:
 
 ## Disseny del programa
 
-S'utilitzará un entorn virtual ... FALTA ACABAR
+S'utilitza un entorn virtual ... ******FALTA ACABAR******
+
+Farem servir Custom TKinter per a línterfície gràfica, ja que té més opcions de configuració disponibles (més personalitzades)
 
 ## UML (Pas a pas)
 
