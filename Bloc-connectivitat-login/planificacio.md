@@ -32,8 +32,6 @@ S'utilitzará un entorn virtual ...
 4. Si existeix retorna un rol i mostra el menu segons el rol de l'usuari
 5. En cas contrari es fa un control d'errors i es mostra el tipus d'error per pantalla
 
-IMG --> Fer un draw.io amb un UML del login (PUNT FINAL)
-
 ## Estructura
 
 L'organització dels fitxers:
@@ -50,5 +48,7 @@ Al fitxer db.py és la connexió a la base de dades de PostgreSQL.
 El menu.py és el menú principal, hi han 2 menus, el primer serà d'admin i el segon d'usuari.
 
 El main.py és el programa principal amb l'usuari i contrasenya.
+
+El funcions.py és on estan totes les funcions principals del programa que estan enllaçades amb el main.
 
 Al autentificacio.py es on es troba tot el relacionat amb el login, amb el hash de contrasenya.
