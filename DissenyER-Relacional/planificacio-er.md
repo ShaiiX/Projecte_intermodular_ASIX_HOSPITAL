@@ -1,5 +1,6 @@
 # Entitats i atributs
-## Personal
+
+## Personal (generalització)
 ### (id_personal, nom, cognoms, DNI, telèfon, adreça)
 Aquesta entitat es tractara d'una entitat jerarquica on es guardara informació de tot el personal de l'hospital
 On seguidament cada subentitat incorporara informació especifica extra.
@@ -17,6 +18,9 @@ Entitat per al personal de infermeria, amb les seves dades personals, més les e
 ### (id_personal, tipus_feina)
 Entitat per al personal vari, que seria els zeladors, administratius, conductors d'ambulàncies...
 
+## Planta
+### (num_planta)
+
 ## Habitacio
 ### (id_habitacio, num_habitacio, num_planta)
 
@@ -28,3 +32,15 @@ Entitat per al personal vari, que seria els zeladors, administratius, conductors
 
 ## Pacient
 ### (id_pacient, nom, cognoms, DNI, data_naixement)
+
+## visita
+### 
+
+## Medicament
+### (id_medicament, nom)
+
+## reservacio_habitacio
+###
+
+## operacio
+###
