@@ -22,9 +22,9 @@ Es programen diferents tasques:
 
 ## Disseny del programa
 
-S'utilitzará un entorn virtual ...
+S'utilitzará un entorn virtual ... FALTA ACABAR
 
-## Procés pas a pas
+## UML (Pas a pas)
 
 1. L'usuari inicia el programa
 2. Introdueix el nom d'usuari i la contrassenya
@@ -34,7 +34,7 @@ S'utilitzará un entorn virtual ...
 
 ## Estructura
 
-L'organització dels fitxers:
+L'organització dels fitxers serà de la següent manera per mantenir l'ordpre del programa:
 
 Directori bloc/
 - db.py
