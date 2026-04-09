@@ -43,12 +43,12 @@ Directori bloc/
 - funcions.py
 - autenticacio.py
 
-Al fitxer db.py és la connexió a la base de dades de PostgreSQL.
+Al **fitxer db.py** és la connexió a la base de dades de PostgreSQL.
 
-El menu.py és el menú principal, hi han 2 menus, el primer serà d'admin i el segon d'usuari.
+El **menu.py** és el menú principal, hi han 2 menus, el primer serà d'admin i el segon d'usuari.
 
-El main.py és el programa principal amb l'usuari i contrasenya.
+El **main.py** és el programa principal amb l'usuari i contrasenya.
 
-El funcions.py és on estan totes les funcions principals del programa que estan enllaçades amb el main.
+El **funcions.py** és on estan totes les funcions principals del programa que estan enllaçades amb el main.
 
-Al autentificacio.py es on es troba tot el relacionat amb el login, amb el hash de contrasenya.
+Al **autentificacio.py** es on es troba tot el relacionat amb el login, amb el hash de contrasenya.
