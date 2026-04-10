@@ -13,6 +13,7 @@ https://sapalomera-team-l2aecu2e.atlassian.net/jira/software/projects/KAN/list?j
 
 ## Diari de Sessions
 Arnau: 
+
 Shaila: https://docs.google.com/spreadsheets/d/1EbHv5XR8m4Uhdz0NWkdmuYQNEATg8_SRNW77OsiYkdw/edit?usp=sharing 
 
 Shaila Martínez - Arnau Farreras
