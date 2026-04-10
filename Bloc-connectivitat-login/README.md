@@ -22,9 +22,17 @@ Es programen diferents tasques:
 
 ## Disseny del programa
 
-S'utilitza un entorn virtual ... ******FALTA ACABAR******
+## Disseny del programa
 
-Farem servir Custom TKinter per a línterfície gràfica, ja que té més opcions de configuració disponibles (més personalitzades)
+El programa es desenvoluparà en Python utilitzant un entorn virtual (venv) per gestionar les llibreries.
+
+La interfície gràfica es farà amb CustomTkinter, ja que permet més personalització.
+
+El codi estarà organitzat de forma modular, separant els fitxers segons la seva funció (connexió a BD, login, menú, etc.).
+
+S’utilitzarà un enfocament d’anàlisi descendent, començant per les parts principals i dividint-les en funcions més petites.
+
+També es faran servir llibreries per facilitar la connexió amb la base de dades i altres funcionalitats.
 
 ## UML (Pas a pas)
 
