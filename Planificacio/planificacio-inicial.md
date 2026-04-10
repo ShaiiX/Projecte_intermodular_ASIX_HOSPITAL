@@ -9,6 +9,7 @@
 - Utilitzarem PostgreSQL com a bd com a SGBD perquè és gratuït, i de codi obert, aquesta eina ja l’hem utilitzat a clase per tant tenim experiència a l’hora d’utilitzar-la.  
 - S'utilitzarà el UTF-8 per als caracters cirilics  
 - Té eines per realitzar la replicació  
+- PostgreSQL en Linux però amb un partner darrera com RedHat per tenir assistència tècnica  
 
 ## Seguretat
 - Implementarem sistema de rols i usuaris amb permisos restrictius  
@@ -22,7 +23,41 @@
 
 ## Disponibilitat
 - Tindrem 2 servidors, el principal i la rèplica  
-- Utilitzarem una arquitectura Actiu-Passiu, ja que sería per a un pressupost baix, que és just el que busquem  
+- Utilitzarem una arquitectura Actiu-passiu, ja que sería per a un pressupost baix, que és just el que busquem  
+- Farem una replicació Master-Slave:
+  - El master permet escriure i modificar dades  
+  - El slave és només de lectura i es replica en temps real  
+  - En cas de fallada del master, el slave es converteix en el nou master  
+- Utilització de NAS HP:
+  - Emmagatzematge centralitzat per a backups físics  
+  - Permet guardar còpies sense afectar el rendiment del servidor principal  
+  - Alta disponibilitat i redundància de dades  
+  - Assistència tècnica en cas de fallada de hardware  
+
+## Backups
+- Estratègia general:
+  - Backup complet setmanal  
+  - Backup incremental diari  
+  - Separació de còpies en diferents ubicacions  
+
+- Tipus de backups:
+  - Backup físic:
+    - Còpia directa dels fitxers de PostgreSQL  
+    - Emmagatzematge al NAS HP per seguretat i disponibilitat  
+  - Backup en calent:
+    - Sense aturar el servei de PostgreSQL  
+    - Permet continuar treballant mentre es fa la còpia  
+
+- Automatització:
+  - Execució automàtica amb Cron a Linux (02:00 AM)  
+
+- Funcionament:
+  - Les dades es processen primer en memòria i després a disc  
+  - Les transaccions es guarden en logs (WAL)  
+  - En cas de fallada:
+    - Es restaura la còpia des del NAS  
+    - S’apliquen els logs  
+    - Recuperació fins a l’últim punt possible  
 
 ## Dummy data
 - Generar les dades amb eina Faker, que s’incorpora amb el python, el llenguatge que utilitzarem  
@@ -31,13 +66,6 @@
 - 100 metges  
 - 200 infermers  
 - 50 persones d’administració  
-
-## Backups
-- Farem còpies completes que inclou tota la base de dades i es farà diàriament  
-- Amb aquesta còpia es podria restaurar el sistema complet  
-- Es farà també un backup incremental que només guardarà els canvis des de l’últim backup, d’aquesta manera reduïm espai i temps  
-- Els backups es faran automàticament  
-- Es faran a les 2:00 AM per evitar impactes al rendiment del sistema  
 
 ## Integracions i visualitzacions
 - Es faran exportacions de dades XML mensualment  
