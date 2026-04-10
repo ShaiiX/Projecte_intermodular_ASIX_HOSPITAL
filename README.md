@@ -12,7 +12,7 @@ Repositori pel projecte ASIX 1
 https://sapalomera-team-l2aecu2e.atlassian.net/jira/software/projects/KAN/list?jql=project+%3D+KAN+ORDER+BY+due+ASC%2C+created+ASC&atlOrigin=eyJpIjoiOTA5OTY2YTc3NWI3NDNhOWFkNmYyNmRlNWU5MjAyNGQiLCJwIjoiaiJ9
 
 ## Diari de Sessions
-https://docs.google.com/document/d/1b7_zUA_enh_okODOLEO0k9IFuJibPhyvR2iTuzMz-hM/edit?usp=sharing
-
+Arnau: 
+Shaila: https://docs.google.com/spreadsheets/d/1EbHv5XR8m4Uhdz0NWkdmuYQNEATg8_SRNW77OsiYkdw/edit?usp=sharing 
 
 Shaila Martínez - Arnau Farreras
