@@ -22,8 +22,6 @@ Es programen diferents tasques:
 
 ## Disseny del programa
 
-## Disseny del programa
-
 El programa es desenvoluparà en Python utilitzant un entorn virtual (venv) per gestionar les llibreries.
 
 La interfície gràfica es farà amb CustomTkinter, ja que permet més personalització.
@@ -34,7 +32,7 @@ S’utilitzarà un enfocament d’anàlisi descendent, començant per les parts 
 
 També es faran servir llibreries per facilitar la connexió amb la base de dades i altres funcionalitats.
 
-## UML (Pas a pas)
+## Funcionament pas a pas
 
 1. L'usuari inicia el programa
 2. Introdueix el nom d'usuari i la contrassenya
