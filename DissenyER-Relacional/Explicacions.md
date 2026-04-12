@@ -73,6 +73,7 @@ Es tracta de medicament amb el nom especific i descripció, només conte això j
 Gestió de les vendes o sortides de medicaments, a més incorporara al pacient/ingres a qui si l'hi ha subministrat aquest medicaments.
 
 ## Cantina
+Apartat d'amplicació de la cantina
 ### EMPRESA_EXTERNA
 **(`id_empresa` (PK), nom, direccio, correu, telefon, persona_contacte)**
 Es tracta de les empreses que poden llogar la cantina, com no sempre serà la mateixa empresa, es necesari guardar-ne dades de les proximes empreses.
@@ -82,6 +83,7 @@ Es tracta de les empreses que poden llogar la cantina, com no sempre serà la ma
 Registre economic fet per la empresa que externa del lloguer de la cantina, es necesari fer el calcul del lloguer que es portara l'hospital.
 
 ## Seguretat
+Es un apartat incoprorat que no s'indica però si seria necesari per a tenir controlada les dades i tenir-ho informat.
 ### USUARI
 **(`id_usuari` (PK), nomusuari, contrasenya, data_creacio, actiu, ultim_login)**
 Aquesta entitat es per a mantenir les dades dels usuaris que utilitzaran el sistema, funcionara per a trovar de forma més rapida aquestes dades a més d'afegir alguna capa més de seguretat dins de la aplicacio.
