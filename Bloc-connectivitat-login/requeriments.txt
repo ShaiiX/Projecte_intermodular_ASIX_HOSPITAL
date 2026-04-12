@@ -1,1 +1,2 @@
 Llibreries a importar per la seva connectivitat
+pip install psycopg2 bcrypt customtkinter
