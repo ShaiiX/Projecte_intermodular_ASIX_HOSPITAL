@@ -66,8 +66,9 @@ class App(ctk.CTk):
             return
 
         if result:
-            messagebox.showinfo("OK", "Login correcte")
+            messagebox.showinfo("Ok", "Login correcte")
             funcions.guardar_login_fitxer(nom_usuari, contrasenya)
+            self.withdraw() # ocultar finestra login
             menu.obrir_menu(result)
         else:
             messagebox.showerror("Error", "Login incorrecte")
