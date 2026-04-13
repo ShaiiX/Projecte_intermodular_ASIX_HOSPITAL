@@ -1,6 +1,5 @@
 import customtkinter as ctk
 from tkinter import messagebox
-
 import funcions
 import menu
 

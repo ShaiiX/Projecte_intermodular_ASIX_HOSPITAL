@@ -1,0 +1,12 @@
+He importat llibreries (dependències externes) com:
+psycopg2 per a la connexió a la base de dades, bcrypt per a l'encriptació de contrasenyes i customtkinter per a una millor interfície gràfica
+
+Instal·lació amb la seguent comanda:
+pip install psycopg2 bcrypt customtkinter
+
+Versions:
+psycopg2==2.9.11
+bcrypt==5.0.0
+customtkinter==5.2.2
+
+Tot i que utilitzem base64 per codificar el fitxer, la contrasenya no es guarda en text pla, sinó que s’aplica un hash per garantir la seguretat.
