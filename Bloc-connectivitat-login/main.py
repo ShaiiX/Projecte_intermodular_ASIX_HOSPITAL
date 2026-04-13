@@ -3,84 +3,91 @@ from tkinter import messagebox
 import funcions
 import menu
 
+# configuració visual
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
-class App(ctk.CTk):
-    def __init__(self):
-        super().__init__()
 
-        self.title("Hospital - Login")
-        self.geometry("400x350")
-        self.resizable(False, False)
+# finestra principal
+app = ctk.CTk()
+app.title("Hospital - Login")
+app.geometry("400x350")
+app.resizable(False, False)
 
-        # principal
-        self.frame = ctk.CTkFrame(self, corner_radius=15)
-        self.frame.pack(pady=40, padx=40, fill="both", expand=True)
+# frame principal
+frame = ctk.CTkFrame(app, corner_radius=15)
+frame.pack(pady=40, padx=40, fill="both", expand=True)
 
-        self.titol = ctk.CTkLabel(  # títol
-            self.frame,
-            text="Hospital Login",
-            font=ctk.CTkFont(size=20, weight="bold")
-        )
-        self.titol.pack(pady=(20, 20))
+# títol
+titol = ctk.CTkLabel(
+    frame,
+    text="Hospital Login",
+    font=ctk.CTkFont(size=20, weight="bold")
+)
+titol.pack(pady=(20, 20))
 
-        self.user = ctk.CTkEntry(   # input usuari
-            self.frame,
-            placeholder_text="Usuari",
-            width=200
-        )
-        self.user.pack(pady=10)
+# input usuari
+entry_user = ctk.CTkEntry(
+    frame,
+    placeholder_text="Usuari",
+    width=200
+)
+entry_user.pack(pady=10)
 
-        self.password = ctk.CTkEntry(   # input contrasenya
-            self.frame,
-            placeholder_text="Contrasenya",
-            show="*",
-            width=200
-        )
-        self.password.pack(pady=10)
+# input contrasenya
+entry_pass = ctk.CTkEntry(
+    frame,
+    placeholder_text="Contrasenya",
+    show="*",
+    width=200
+)
+entry_pass.pack(pady=10)
 
-        self.btn_login = ctk.CTkButton( # botó login
-            self.frame,
-            text="Iniciar sessió",
-            command=self.login,
-            width=200
-        )
-        self.btn_login.pack(pady=(15, 5))
+# funció login
+def login():
+    nom_usuari = entry_user.get()
+    contrasenya = entry_pass.get()
+    resultat = funcions.proces_login(nom_usuari, contrasenya)
 
-        self.btn_register = ctk.CTkButton(  # botó registre
-            self.frame,
-            text="Registrar",
-            command=self.register,
-            width=200,
-            fg_color="gray"
-        )
-        self.btn_register.pack(pady=5)
+    if resultat == "buit":
+        messagebox.showwarning("Error", "Camps buits")
+        return
 
-    def login(self):
-        nom_usuari = self.user.get()
-        contrasenya = self.password.get()
-        result = funcions.proces_login(nom_usuari, contrasenya)
+    if resultat:
+        messagebox.showinfo("OK", "Login correcte")
+        funcions.guardar_login_fitxer(nom_usuari, contrasenya)
+        app.withdraw()  # amagar login
+        menu.obrir_menu(resultat)
+    else:
+        messagebox.showerror("Error", "Login incorrecte")
 
-        if result == "buit":
-            messagebox.showwarning("Error", "Camps buits")
-            return
+# funció registre
+def registre():
+    nom_usuari = entry_user.get()
+    contrasenya = entry_pass.get()
 
-        if result:
-            messagebox.showinfo("Ok", "Login correcte")
-            funcions.guardar_login_fitxer(nom_usuari, contrasenya)
-            self.withdraw() # ocultar finestra login
-            menu.obrir_menu(result)
-        else:
-            messagebox.showerror("Error", "Login incorrecte")
+    if funcions.proces_registre(nom_usuari, contrasenya):
+        messagebox.showinfo("OK", "Usuari creat")
+    else:
+        messagebox.showerror("Error", "Error al registrar")
 
-    def register(self):
-        nom_usuari = self.user.get()
-        contrasenya = self.password.get()
-        if funcions.proces_registre(nom_usuari, contrasenya):
-            messagebox.showinfo("OK", "Usuari creat")
-        else:
-            messagebox.showerror("Error", "Error al registrar")
+# botó login
+btn_login = ctk.CTkButton(
+    frame,
+    text="Iniciar sessió",
+    command=login,
+    width=200
+)
+btn_login.pack(pady=(15, 5))
 
-# executar
-app = App()
+# botó registre
+btn_register = ctk.CTkButton(
+    frame,
+    text="Registrar",
+    command=registre,
+    width=200,
+    fg_color="gray"
+)
+btn_register.pack(pady=5)
+
+# executar app
 app.mainloop()

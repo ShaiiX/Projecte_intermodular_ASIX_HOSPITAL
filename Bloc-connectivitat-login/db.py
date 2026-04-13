@@ -1,15 +1,15 @@
 import psycopg2
 from tkinter import messagebox
 
-def connectar():
+def connectar():    # connectar a la bd de PostgreSQL
     try:
-        conn = psycopg2.connect(
+        conn = psycopg2.connect(    # es crea la connexió
             host="localhost",
             database="hospital",
             user="postgres",
             password="postgres"
         )
-        return conn
-    except Exception as e:
+        return conn # retorna la connexió
+    except Exception as e:  # si hi ha error mostra un missatge
         messagebox.showerror("Error BD", f"No s'ha pogut connectar:\n{e}")
         return None
