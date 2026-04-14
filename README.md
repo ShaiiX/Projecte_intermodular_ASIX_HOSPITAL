@@ -6,9 +6,9 @@ Repositori pel projecte ASIX 1
 - Shaila Martínez
 
 ## Índex
-1. [Introducción](#introducción)
-2. [Sección 1](#sección-1)
-3. [Sección 2](#sección-2)
+1. [Prova](#introducción)
+2. [Prova 1](#sección-1)
+3. [Prova 2](#sección-2)
 
 ## Planificació del projecte en Jira
 https://sapalomera-team-l2aecu2e.atlassian.net/jira/software/projects/KAN/list?jql=project+%3D+KAN+ORDER+BY+due+ASC%2C+created+ASC&atlOrigin=eyJpIjoiOTA5OTY2YTc3NWI3NDNhOWFkNmYyNmRlNWU5MjAyNGQiLCJwIjoiaiJ9
