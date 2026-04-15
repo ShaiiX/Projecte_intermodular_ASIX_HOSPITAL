@@ -14,3 +14,6 @@ Tot i que utilitzem base64 per codificar el fitxer, la contrasenya no es guarda 
 Entorn virtual:
 python -m venv entorn-login
 entorn-login\Scripts\activate
+
+He creat dos usuaris a la base de dades: prova1 (amb rol d'administrador) i prova2 (amb rol d'usuari normal). L'usuari admin té permisos per gestionar usuaris, mentre que l'usuari normal només pot iniciar sessió i veure el menú principal.
+La contrasenya per a tots dos usuaris és "1234", els he creat per que es puguin fer les proves sense necessitat de connectar-se a la bsae de dades. El codi real per connectar-se l'he comentat per evitar que hi hagin errors, ja que la BD no està creada i no es pot connectar encara. Quan es crei la base de dades i es posin les dades correctes, només caldrà descomentar el codi i ja funcionarà.
