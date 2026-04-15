@@ -72,7 +72,7 @@ def obrir_menu(rol):    # funció per obrir el menú segons el rol de l'usuari
 
     tk.Button(  # botó per tornar al login
         f,
-        text="← Tornar",
+        text="Tornar",
         command=tornar_login,
         bg="#e5e7eb",
         fg="black",
