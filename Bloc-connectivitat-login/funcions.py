@@ -1,6 +1,6 @@
-import hashlib
-import base64
-import autentificacio
+import hashlib  # per fer hash de les contrasenyes
+import base64   # per codificar la informació del login de manera segura en un fitxer
+import autentificacio   # importar funcions de autentificaccio
 
 # validacio
 def validar_inputs(nom_usuari, contrasenya):    # comprova que els camps no estiguin buits

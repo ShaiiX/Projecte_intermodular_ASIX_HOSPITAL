@@ -1,11 +1,16 @@
-import customtkinter as ctk
-from tkinter import messagebox
-import funcions
-import menu
+import customtkinter as ctk # interfície gràfica més moderna que tkinter
+from tkinter import messagebox  # per mostrar missatges d'error o informació
+import funcions # importar funcions
+import menu #importar el menu per obrir despres del login
+import time # per gestionar el cooldown i bloqueig de login
 
 # configuració visual amb customtkinter
 ctk.set_appearance_mode("light")    # mode clar
 ctk.set_default_color_theme("blue") # tema blau per defecte
+
+intents_inici_sessio = {}   # guarda intents fallits per usuari
+bloqueig_inici_sessio = {}  # guarda el temps de bloqueig per usuari
+timer_actiu = False         # controla si el countdown està actiu
 
 # finestra principal de login
 app = ctk.CTk()
@@ -14,7 +19,7 @@ app.geometry("600x520") # mida
 
 # frame principal que conté tots els elements del login
 frame = ctk.CTkFrame(app, corner_radius=25) # bores arredonides
-frame.pack(pady=80, padx=80, fill="both", expand=True)  # centrat i amb espai al voltant
+frame.pack(pady=60, padx=60, fill="both", expand=True)  # centrat i amb espai al voltant
 
 # etiqueta del títol
 titol = ctk.CTkLabel(
@@ -22,49 +27,112 @@ titol = ctk.CTkLabel(
     text="Hospital Login",  # text que es mostra
     font=ctk.CTkFont(size=32, weight="bold")    # font més gran i en negreta
 )
-titol.pack(pady=(40, 35))   # espai entre el títol i els inputs
+titol.pack(pady=(30, 20))   # espai entre el títol i els inputs
 
 # input usuari
 entry_user = ctk.CTkEntry(
     frame,
-    placeholder_text="Usuari",  # text placeholder (apareix quan no s'ha escrit res)
+    placeholder_text="Usuari",  # text dins del camp quan està buit
     width=320,
-    height=50,
+    height=45,
     corner_radius=12,
     font=ctk.CTkFont(size=16)
 )
-entry_user.pack(pady=15)
+entry_user.pack(pady=10)
 
 # input contrasenya
 entry_pass = ctk.CTkEntry(
     frame,
     placeholder_text="Contrasenya",
-    show="*",   # amaga el text que s'escriu amb asteriscs
+    show="*",   # oculta el text amb asteriscs
     width=320,
-    height=50,
+    height=45,
     corner_radius=12,
     font=ctk.CTkFont(size=16)
 )
-entry_pass.pack(pady=15)
+entry_pass.pack(pady=10)
+
+# etiqueta per mostrar missatges dins la mateixa finestra del login
+status_label = ctk.CTkLabel(
+    frame,
+    text="",    # inicialment està buit
+    font=ctk.CTkFont(size=14),
+    text_color="red"
+)
+status_label.pack(pady=5)
+
+
+# cooldown
+def actualitzar_countdown(nom_usuari):
+    global timer_actiu  # modifica la variable global per controlar el timer
+
+    # si ja no hi ha bloqueig
+    if nom_usuari not in bloqueig_inici_sessio:
+        timer_actiu = False # es desactiva el timer
+        return
+
+    temps_restants = int(bloqueig_inici_sessio[nom_usuari] - time.time())   # calcula el temps restant del bloqueig
+
+    if temps_restants <= 0:
+        # desbloqueig automàtic
+        del bloqueig_inici_sessio[nom_usuari]   # es treu el bloqueig
+        intents_inici_sessio[nom_usuari] = 0    # es reinicien els intents
+        status_label.configure(text="Pots tornar a intentar login", text_color="green") # missatge de desbloqueig
+        timer_actiu = False # es desactiva el timer
+        return
+
+    # actualitzar text cada segon
+    status_label.configure(
+        text=f"Bloquejat: espera {temps_restants} segons",  # mostra el temps restant del bloqueig
+        text_color="red"
+    )
+
+    # repetir cada segon
+    app.after(1000, lambda: actualitzar_countdown(nom_usuari))
 
 
 def login():    # funció que s'executa quan clica el botó de login
+    global timer_actiu
+
     # obtenir els valors dels inputs
     nom_usuari = entry_user.get()
     contrasenya = entry_pass.get()
-    resultat = funcions.proces_login(nom_usuari, contrasenya)   # crida a la funcio per validar el login
+
+    # cooldown i bloqueig per evitar atacs de força bruta
+    if nom_usuari in bloqueig_inici_sessio:
+        actualitzar_countdown(nom_usuari)   # actualitza el cooldown
+        return
+
+    resultat = funcions.proces_login(nom_usuari, contrasenya)   # comprovar login amb la funció externa
 
     if resultat == "buit":  # control si els camps estan buits
-        messagebox.showwarning("Error", "Camps buits")
+        status_label.configure(text="Camps buits", text_color="orange")
         return
 
     if resultat:    # si el login és correcte
-        messagebox.showinfo("OK", "Login correcte")
-        funcions.guardar_login_fitxer(nom_usuari, contrasenya)  # guardar el login en un fitxer amb seguretat
-        app.withdraw()  # amagar finestra login
-        menu.obrir_menu(resultat)   # obrir menú segons el rol de l'usuari
+        # reiniciar intents
+        intents_inici_sessio[nom_usuari] = 0    # reinicia els intents
+
+        status_label.configure(text="Login correcte", text_color="green")
+
+        funcions.guardar_login_fitxer(nom_usuari, contrasenya)  # guarda info del login en un fitxer de manera segura
+        app.withdraw()  # oculta la finestra de login
+        menu.obrir_menu(resultat)   # obre el menú segons el rol retornat pel login
+
     else:
-        messagebox.showerror("Error", "Login incorrecte")   # si el login és incorrecte es mostra un error
+        # sumar intent fallit
+        intents_inici_sessio[nom_usuari] = intents_inici_sessio.get(nom_usuari, 0) + 1
+        intents_restants = 10 - intents_inici_sessio[nom_usuari]
+
+        # si arriba a 10 intents es bloqueja ddurant 2 minuts
+        if intents_inici_sessio[nom_usuari] >= 10:
+            bloqueig_inici_sessio[nom_usuari] = time.time() + 120
+            actualitzar_countdown(nom_usuari)
+        else:
+            status_label.configure( # mostra el número d'intents restants
+                text=f"Login incorrecte. Et queden {intents_restants} intents",
+                text_color="red"
+            )
 
 # funció registre
 def registre():
@@ -81,13 +149,13 @@ def registre():
 btn_login = ctk.CTkButton(
     frame,
     text="Iniciar sessió",
-    command=login,  # funció que s'executa al clicar
+    command=login,
     width=320,
-    height=50,
+    height=45,
     corner_radius=12,
     font=ctk.CTkFont(size=16, weight="bold")
 )
-btn_login.pack(pady=(30, 10))
+btn_login.pack(pady=10)
 
 # executar app
 app.mainloop()

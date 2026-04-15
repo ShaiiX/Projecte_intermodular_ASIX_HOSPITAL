@@ -1,4 +1,4 @@
-import psycopg2
+import psycopg2 # connectar a la bd de postgres
 from tkinter import messagebox
 
 def connectar():    # connectar a la bd de PostgreSQL

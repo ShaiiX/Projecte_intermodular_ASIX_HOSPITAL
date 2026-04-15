@@ -1,4 +1,4 @@
-import bcrypt
+import bcrypt   # hash de contrasenyes
 from db import connectar
 
 # hash
@@ -34,7 +34,7 @@ def registrar_usuari(nom_usuari, contrasenya, rol="usuari"):    # registra un no
     finally:
         conn.close()    # es tanca semrpre la connexió
 
-# login
+# login oficial (actualment no s'utilitza, es fa servir un login de prova fins que es crei la connexió amb la bd)
 #def login_usuari(nom_usuari, contrasenya):  # funció per validar les credencials d'un usuari
 #    conn = connectar()
 #    if not conn:
@@ -64,6 +64,7 @@ def registrar_usuari(nom_usuari, contrasenya, rol="usuari"):    # registra un no
 #    finally:
 #        conn.close()
 
+# aquests són usuaris de prova fins que el login funcioni amb la base de dades
 def login_usuari(nom_usuari, contrasenya):  # funció per validar les credencials d'un usuari
 
     # --- MODE PROVA (sense BD) ---
