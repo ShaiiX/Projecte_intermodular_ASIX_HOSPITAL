@@ -80,7 +80,7 @@ btn_toggle = ctk.CTkButton(
 )
 btn_toggle.pack(pady=(0, 10))
 
-# botó per canviar mode (clar / fosc)
+# botó per canviar mode (clar o fosc)
 def canviar_mode():
     if config.mode_app == "light":  # si el mode actual és clar canvia a fosc
         config.mode_app = "dark"    

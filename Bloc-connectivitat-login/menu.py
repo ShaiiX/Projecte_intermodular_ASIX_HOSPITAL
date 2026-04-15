@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-import funcions
+import funcions # importar fiitxer de funcions
 
 def obrir_menu(rol):    # funció per obrir el menú segons el rol de l'usuari
     f = tk.Toplevel()   # nova finestra
