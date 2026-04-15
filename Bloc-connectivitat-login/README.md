@@ -50,6 +50,7 @@ Directori bloc/
 - main.py
 - funcions.py
 - autenticacio.py
+- config.py
 
 Al **fitxer db.py** és la connexió a la base de dades de PostgreSQL.
 
@@ -60,6 +61,8 @@ El **main.py** és el programa principal amb l'usuari i contrasenya.
 El **funcions.py** és on estan totes les funcions principals del programa que estan enllaçades amb el main.
 
 Al **autentificacio.py** es on es troba tot el relacionat amb el login, amb el hash de contrasenya.
+
+L'arxiu **config.py** és on hi ha la configuració extra com el tema clar/fosc (en un futur es posaran més configuracions de visualització)
 
 ---
 
