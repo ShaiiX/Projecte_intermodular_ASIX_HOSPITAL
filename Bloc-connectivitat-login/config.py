@@ -1,0 +1,1 @@
+mode_app = "light"  # mode per defecte de la interfície (clar)

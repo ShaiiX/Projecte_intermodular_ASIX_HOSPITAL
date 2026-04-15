@@ -3,14 +3,18 @@ from tkinter import messagebox  # per mostrar missatges d'error o informació
 import funcions # importar funcions
 import menu #importar el menu per obrir despres del login
 import time # per gestionar el cooldown i bloqueig de login
+import config # configuració global (mode clar/oscur)
 
 # configuració visual amb customtkinter
-ctk.set_appearance_mode("light")    # mode clar
+ctk.set_appearance_mode(config.mode_app)    # mode clar o fosc segons config
 ctk.set_default_color_theme("blue") # tema blau per defecte
 
 intents_inici_sessio = {}   # guarda intents fallits per usuari
 bloqueig_inici_sessio = {}  # guarda el temps de bloqueig per usuari
 timer_actiu = False         # controla si el countdown està actiu
+
+# variable per mostrar/ocultar contrasenya
+mostrar_contrasenya = False
 
 # finestra principal de login
 app = ctk.CTk()
@@ -51,6 +55,49 @@ entry_pass = ctk.CTkEntry(
     font=ctk.CTkFont(size=16)
 )
 entry_pass.pack(pady=10)
+
+# funció per mostrar o ocultar la contrasenya
+def toggle_contrasenya():
+    global mostrar_contrasenya
+
+    if not mostrar_contrasenya:
+        entry_pass.configure(show="")
+        btn_toggle.configure(text="Amagar")
+        mostrar_contrasenya = True
+    else:
+        entry_pass.configure(show="*")
+        btn_toggle.configure(text="Mostrar")
+        mostrar_contrasenya = False
+
+# botó per mostrar/ocultar contrasenya
+btn_toggle = ctk.CTkButton(
+    frame,
+    text="Mostrar",
+    width=90,
+    height=30,
+    corner_radius=8,
+    command=toggle_contrasenya
+)
+btn_toggle.pack(pady=(0, 10))
+
+# botó per canviar mode (clar / fosc)
+def canviar_mode():
+    if config.mode_app == "light":  # si el mode actual és clar canvia a fosc
+        config.mode_app = "dark"    
+    else:
+        config.mode_app = "light"
+
+    ctk.set_appearance_mode(config.mode_app)
+
+btn_mode = ctk.CTkButton(   # botó per canviar el mode
+    frame,
+    text="Canviar mode",
+    width=120,
+    height=30,
+    corner_radius=8,
+    command=canviar_mode
+)
+btn_mode.pack(pady=5)
 
 # etiqueta per mostrar missatges dins la mateixa finestra del login
 status_label = ctk.CTkLabel(
@@ -100,10 +147,10 @@ def login():    # funció que s'executa quan clica el botó de login
 
     # cooldown i bloqueig per evitar atacs de força bruta
     if nom_usuari in bloqueig_inici_sessio:
-        actualitzar_countdown(nom_usuari)   # actualitza el cooldown
+        actualitzar_countdown(nom_usuari)
         return
 
-    resultat = funcions.proces_login(nom_usuari, contrasenya)   # comprovar login amb la funció externa
+    resultat = funcions.proces_login(nom_usuari, contrasenya)
 
     if resultat == "buit":  # control si els camps estan buits
         status_label.configure(text="Camps buits", text_color="orange")
@@ -111,25 +158,25 @@ def login():    # funció que s'executa quan clica el botó de login
 
     if resultat:    # si el login és correcte
         # reiniciar intents
-        intents_inici_sessio[nom_usuari] = 0    # reinicia els intents
+        intents_inici_sessio[nom_usuari] = 0
 
         status_label.configure(text="Login correcte", text_color="green")
 
-        funcions.guardar_login_fitxer(nom_usuari, contrasenya)  # guarda info del login en un fitxer de manera segura
-        app.withdraw()  # oculta la finestra de login
-        menu.obrir_menu(resultat)   # obre el menú segons el rol retornat pel login
+        funcions.guardar_login_fitxer(nom_usuari, contrasenya)
+        app.withdraw()
+        menu.obrir_menu(resultat)
 
     else:
         # sumar intent fallit
         intents_inici_sessio[nom_usuari] = intents_inici_sessio.get(nom_usuari, 0) + 1
         intents_restants = 10 - intents_inici_sessio[nom_usuari]
 
-        # si arriba a 10 intents es bloqueja ddurant 2 minuts
+        # si arriba a 10 intents es bloqueja durant 2 minuts
         if intents_inici_sessio[nom_usuari] >= 10:
             bloqueig_inici_sessio[nom_usuari] = time.time() + 120
             actualitzar_countdown(nom_usuari)
         else:
-            status_label.configure( # mostra el número d'intents restants
+            status_label.configure(
                 text=f"Login incorrecte. Et queden {intents_restants} intents",
                 text_color="red"
             )
@@ -140,10 +187,10 @@ def registre():
     nom_usuari = entry_user.get()
     contrasenya = entry_pass.get()
 
-    if funcions.proces_registre(nom_usuari, contrasenya):   # crida la funció per registrar l'usuari
+    if funcions.proces_registre(nom_usuari, contrasenya):
         messagebox.showinfo("OK", "Usuari creat")
     else:
-        messagebox.showerror("Error", "Error al registrar") # sino error al registrar
+        messagebox.showerror("Error", "Error al registrar")
 
 # botó per iniciar sessió
 btn_login = ctk.CTkButton(
