@@ -10,3 +10,7 @@ bcrypt==5.0.0
 customtkinter==5.2.2
 
 Tot i que utilitzem base64 per codificar el fitxer, la contrasenya no es guarda en text pla, sinó que s’aplica un hash per garantir la seguretat.
+
+Entorn virtual:
+python -m venv entorn-login
+entorn-login\Scripts\activate

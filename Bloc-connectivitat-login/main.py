@@ -80,15 +80,5 @@ btn_login = ctk.CTkButton(
 )
 btn_login.pack(pady=(15, 5))
 
-# botó registre
-btn_register = ctk.CTkButton(   # botó per registrar el nou usuari
-    frame,
-    text="Registrar",
-    command=registre,   # funció que s'executa al clicar
-    width=200,
-    fg_color="gray" # color diferent per distingirlo
-)
-btn_register.pack(pady=5)
-
 # executar app
 app.mainloop()
