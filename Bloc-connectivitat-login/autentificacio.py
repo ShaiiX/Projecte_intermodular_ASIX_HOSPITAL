@@ -35,31 +35,42 @@ def registrar_usuari(nom_usuari, contrasenya, rol="usuari"):    # registra un no
         conn.close()    # es tanca semrpre la connexió
 
 # login
+#def login_usuari(nom_usuari, contrasenya):  # funció per validar les credencials d'un usuari
+#    conn = connectar()
+#    if not conn:
+#        return None
+#
+#    try:
+#        cur = conn.cursor()
+#        # consulta per obtenir hash i rol de l'usuari
+#        cur.execute("""
+#            SELECT password, rol FROM usuaris
+#            WHERE username = %s
+#        """, (nom_usuari,))
+#        result = cur.fetchone()
+#        cur.close()
+#        conn.close()
+#
+#        if result:
+#            db_pass, rol = result
+#            if check_contrasenya(contrasenya, db_pass): # comprovació de contrasenya amb bcrypt
+#                return rol  # retorna el rol si el login és correcte
+#        return None
+#
+#    except Exception as e:
+#        print("Error login:", e)
+#        return None
+#    
+#    finally:
+#        conn.close()
+
 def login_usuari(nom_usuari, contrasenya):  # funció per validar les credencials d'un usuari
-    conn = connectar()
-    if not conn:
-        return None
 
-    try:
-        cur = conn.cursor()
-        # consulta per obtenir hash i rol de l'usuari
-        cur.execute("""
-            SELECT password, rol FROM usuaris
-            WHERE username = %s
-        """, (nom_usuari,))
-        result = cur.fetchone()
-        cur.close()
-        conn.close()
+    # --- MODE PROVA (sense BD) ---
+    if nom_usuari == "prova1" and contrasenya == "1234":
+        return "admin"
 
-        if result:
-            db_pass, rol = result
-            if check_contrasenya(contrasenya, db_pass): # comprovació de contrasenya amb bcrypt
-                return rol  # retorna el rol si el login és correcte
-        return None
+    if nom_usuari == "prova2" and contrasenya == "1234":
+        return "usuari"
 
-    except Exception as e:
-        print("Error login:", e)
-        return None
-    
-    finally:
-        conn.close()
+    return None

@@ -10,36 +10,42 @@ ctk.set_default_color_theme("blue") # tema blau per defecte
 # finestra principal de login
 app = ctk.CTk()
 app.title("Hospital - Login")   # titol
-app.geometry("400x350") # mida
+app.geometry("600x520") # mida
 
 # frame principal que conté tots els elements del login
-frame = ctk.CTkFrame(app, corner_radius=15) # bores arredonides
-frame.pack(pady=40, padx=40, fill="both", expand=True)  # centrat i amb espai al voltant
+frame = ctk.CTkFrame(app, corner_radius=25) # bores arredonides
+frame.pack(pady=80, padx=80, fill="both", expand=True)  # centrat i amb espai al voltant
 
 # etiqueta del títol
 titol = ctk.CTkLabel(
     frame,
     text="Hospital Login",  # text que es mostra
-    font=ctk.CTkFont(size=20, weight="bold")    # font més gran i en negreta
+    font=ctk.CTkFont(size=32, weight="bold")    # font més gran i en negreta
 )
-titol.pack(pady=(20, 20))   # espai entre el títol i els inputs
+titol.pack(pady=(40, 35))   # espai entre el títol i els inputs
 
 # input usuari
 entry_user = ctk.CTkEntry(
     frame,
     placeholder_text="Usuari",  # text placeholder (apareix quan no s'ha escrit res)
-    width=200
+    width=320,
+    height=50,
+    corner_radius=12,
+    font=ctk.CTkFont(size=16)
 )
-entry_user.pack(pady=10)
+entry_user.pack(pady=15)
 
 # input contrasenya
 entry_pass = ctk.CTkEntry(
     frame,
     placeholder_text="Contrasenya",
     show="*",   # amaga el text que s'escriu amb asteriscs
-    width=200
+    width=320,
+    height=50,
+    corner_radius=12,
+    font=ctk.CTkFont(size=16)
 )
-entry_pass.pack(pady=10)
+entry_pass.pack(pady=15)
 
 
 def login():    # funció que s'executa quan clica el botó de login
@@ -76,9 +82,12 @@ btn_login = ctk.CTkButton(
     frame,
     text="Iniciar sessió",
     command=login,  # funció que s'executa al clicar
-    width=200
+    width=320,
+    height=50,
+    corner_radius=12,
+    font=ctk.CTkFont(size=16, weight="bold")
 )
-btn_login.pack(pady=(15, 5))
+btn_login.pack(pady=(30, 10))
 
 # executar app
 app.mainloop()
