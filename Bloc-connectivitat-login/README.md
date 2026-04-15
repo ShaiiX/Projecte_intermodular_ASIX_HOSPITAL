@@ -60,3 +60,7 @@ El **main.py** és el programa principal amb l'usuari i contrasenya.
 El **funcions.py** és on estan totes les funcions principals del programa que estan enllaçades amb el main.
 
 Al **autentificacio.py** es on es troba tot el relacionat amb el login, amb el hash de contrasenya.
+
+---
+
+Shaila Martínez - Arnau Farreras
