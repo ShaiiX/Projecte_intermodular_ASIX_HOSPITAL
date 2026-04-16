@@ -6,9 +6,10 @@ Repositori pel projecte ASIX 1
 - Shaila Martínez
 
 ## Índex
-1. [Prova](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/Bloc-connectivitat-login)
-2. [Prova 1](#sección-1)
-3. [Prova 2](#sección-2)
+1. [Planificació inicial](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/blob/main/Planificacio/planificacio-inicial.md)
+2. [DissenyER - Relacional](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/DissenyER-Relacional)
+3. [Bloc de connectivitat i login](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/Bloc-connectivitat-login)
+4. [Esquema de seguretat](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/Esquema-seguretat)
 
 ## Planificació del projecte en Jira
 https://sapalomera-team-l2aecu2e.atlassian.net/jira/software/projects/KAN/list?jql=project+%3D+KAN+ORDER+BY+due+ASC%2C+created+ASC&atlOrigin=eyJpIjoiOTA5OTY2YTc3NWI3NDNhOWFkNmYyNmRlNWU5MjAyNGQiLCJwIjoiaiJ9
