@@ -6,7 +6,7 @@ Repositori pel projecte ASIX 1
 - Shaila Martínez
 
 ## Índex
-1. [Prova](#introducción)
+1. [Prova](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/Bloc-connectivitat-login)
 2. [Prova 1](#sección-1)
 3. [Prova 2](#sección-2)
 
