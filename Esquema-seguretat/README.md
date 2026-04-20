@@ -106,7 +106,41 @@ Per a aquestes dades s'han aplicat mesures de protecció de dades com:
 Així poder evitar l'accés no autoritzat, informació filtrada i la manipulació de les dades.
 
 ## Logs
+Els logs serveixen per a tenir coneixement sobre el que es fa a la base de dades.
+Es separara en dues parts:
 
-Això comporta als logs del sistema de la base de dades amb el seu access 
+- Els logs per als backups, aquest son logs per a tenir access i coneixement el cas del que falli la base de dades,         aquestes es faran copies en altres discs durs, per si el cas de que es cremi o altre inconvenient en el servidor, aquests logs serveixen que al fer el backup inicial poguem recuperar les dades durant el temps del backup i la hora de la fallada.
 
-Es farà la exportació dels logs en NDJSON
+Per activar aquests logs de forma que ho faci el postgres s'ha de configurar el postgresql.conf de la seguent forma:
+
+```
+#per activar els logs
+logging_collector = on  
+
+#per a guardar INSERT, UPDATE, DELETE
+log_statement = 'mod' 
+
+#posicio dels logs, la seva carpeta i el seu nom
+log_directory = 'pg_log_canvis'
+log_filename = 'canvis-%Y-%m-%d.log'
+
+#cada linea per a fer-ho mes llegible
+log_line_prefix = '%t [%p]: '
+```
+Un cop això es realitzaran els logs de forma completa per a poder utilitzarlos en cas de perdua de la base de dades.
+
+- La segona part es sobre tenir coneixement del que es fa, per a seguretat i auditoria, es guarda dins la base de dades, per a tenir access directe i facil desde la aplicació o exportació si es el cas, si es fa un Import, Update o Delete que es repeteix molt, encomptes de guardar totes les dades hi haura una libreria per a no repetir el texte complert de la consulta.
+
+Primerament s'ha d'activar en el postgresql.conf la seguent configuracio:
+Serveix per a carregar una extensio de postgresql al iniciar el servidor que el que fa es normalitzar una query que es pot arribar a repetir sempre, com casi tots els canvis es faran desde l'aplicatiu sera mes simple de tenir un control sombre les dades desde l'aplicatiu tenint-ho de forma normalitzada aprofitant espai.
+```
+shared_preload_libraries = 'pg_stat_statements'
+```
+
+Un cop això ja es pot indicar el trigger, que es trova a Triggers/LOG_AUDITORIA.sql.
+
+Perque no s'utilitza directament el pg_stat_statements? 
+- Es volatil, vol dir que aquesta informacio si es reinicia el servidor o altres inconvenients pot arrivar a sobrecargar sistema si es el cas o perdre el registre de les comandes.
+- No es massa organitzat i es mes complicat de trobar-ho.
+
+Per això s'utilitzara en una taula amb aquestes matiexes dades de forma simplificada.
