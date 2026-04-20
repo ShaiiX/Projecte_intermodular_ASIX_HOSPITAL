@@ -24,6 +24,46 @@ L'implementem per protegir la comunicació entre l'aplicació i la BD.
 3. Configurar pg_hba.conf que gestiona la seguretat d'accés
 4. Automatitzem amb una tasca programada (Cron)
 
+Generar el certificat:
+
+```openssl req -new -x509 -key server.key -out server.crt -days 365```
+
+Configurar permisos perquè postgres només accepta la clau si té permisos restringits:
+
+```chmod 600 server.key```
+
+Configuració del Postgres:
+
+postgres.conf
+
+```
+ssl = on
+ssl_cert_file = 'server.crt'
+ssl_key_file = 'server.key'
+```
+
+pg_hba.conf (totes les connexions amb SSL)
+
+```
+hostssl all all 0.0.0.0/0 md5
+```
+
+## Automatitcació
+
+Límit de validesa del certificat de 365 dies. Script manual:
+
+```
+#!/bin/bash
+openssl req -new -x509 -key server.key -out server.crt -days 365
+systemctl restart postgresql
+```
+
+```crontab -e```
+
+```0 0 1 1 * /ruta/script_ssl.sh```
+
+Renovació anual automàticament
+
 ## Data Masking
 
 Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sense permisos:
