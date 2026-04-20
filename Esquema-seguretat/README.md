@@ -50,3 +50,9 @@ Per a aquestes dades s'han aplicat mesures de protecció de dades com:
 - Registre d'accessos utilitzant logs
 
 Així poder evitar l'accés no autoritzat, informació filtrada i la manipulació de les dades.
+
+## Logs
+
+Això comporta als logs del sistema de la base de dades amb el seu access 
+
+Es farà la exportació dels logs en NDJSON
