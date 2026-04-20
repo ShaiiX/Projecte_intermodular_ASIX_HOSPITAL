@@ -26,7 +26,10 @@ L'implementem per protegir la comunicació entre l'aplicació i la BD.
 
 Generar el certificat:
 
-```openssl req -new -x509 -key server.key -out server.crt -days 365```
+```
+openssl genrsa -out server.key 2048
+openssl req -new -x509 -key server.key -out server.crt -days 365
+```
 
 Configurar permisos perquè postgres només accepta la clau si té permisos restringits:
 
@@ -34,7 +37,7 @@ Configurar permisos perquè postgres només accepta la clau si té permisos rest
 
 Configuració del Postgres:
 
-postgres.conf
+postgresql.conf
 
 ```
 ssl = on
@@ -45,7 +48,7 @@ ssl_key_file = 'server.key'
 pg_hba.conf (totes les connexions amb SSL)
 
 ```
-hostssl all all 0.0.0.0/0 md5
+hostssl all all 192.168.0.0/24 md5
 ```
 
 ## Automatitcació
@@ -58,6 +61,8 @@ openssl req -new -x509 -key server.key -out server.crt -days 365
 systemctl restart postgresql
 ```
 
+El millor seria automatitzar la renovació amb un script que reutilitzi la clau que ja existeix o que utilitzi certificats gestionats (com Let's Encrypt).
+
 ```crontab -e```
 
 ```0 0 1 1 * /ruta/script_ssl.sh```
@@ -66,7 +71,7 @@ Renovació anual automàticament
 
 ## Data Masking
 
-Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sense permisos:
+Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sense permisos. Ho hem implementat utilitzant vistes sql que oculten les dades.
 
 - DNI
 - Adreça
