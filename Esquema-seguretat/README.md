@@ -18,7 +18,7 @@ Els permisos que té cada rol sobre els diferents taules de la BD. Per poder ges
 
 L'implementem per protegir la comunicació entre l'aplicació i la BD.
 
-Pasos del procés:
+**Pasos del procés:**
 1. Generació del certificat
 2. Configuració del servidor a postgresql.conf
 3. Configurar pg_hba.conf que gestiona la seguretat d'accés
@@ -33,6 +33,15 @@ Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sen
 - Telèfon
 - Email
 - Historial mèdic
+
+**Vistes creades**
+- pacient_mask:
+    - DNI
+    - Telèfon
+    - Email
+- expedient_mask: contingut remplaçat per un text
+- vista_mask: Oculta els diagnòstics
+- recepta_mask: descripció oculta (protegeix la info de les receptes)
 
 ## Normativa AGPD
 

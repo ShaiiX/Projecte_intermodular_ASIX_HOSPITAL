@@ -8,7 +8,7 @@ FROM pacient;
 -- expedient mèdic
 CREATE OR REPLACE VIEW expedient_mask AS
 SELECT id_expedient, id_pacient,
-    '*** DADES PROTEGIDES ***' AS historial,    -- ocultar dades sensibles
+    '*** Dades protegides ***' AS historial,    -- ocultar dades sensibles
     data_actualitzacio
 FROM expedient;
 
