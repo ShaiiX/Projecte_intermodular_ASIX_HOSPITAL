@@ -10,6 +10,24 @@ Hem definit els rols segons els permisos:
 - Vari: personal administratiu
 - Pacient: accés únic a les seves dades
 
+El rol pacient, perque hi es? 
+
+Es coneix a hospitals que hi ha el sistema de escaneijar la tarjeta sanitaria o altres i es on et proporciona visites, proves... Son aquestes dades que podra accedir aquest pacient desde la maquina que s'incorporaran, quan arribi el cas, on es posaràn les limitacions desde l'aplicatiu a més desde la base de dades per si es el cas, no es necesari que aquest pacient pugui accedir a les dades del personal si arriba a ocurrir alguna incidencia.
+
+## Schema 
+S'ha separat les taules en diferents schemas, per a tenir mes control ordre i seguretat dins les dades, també facilitara feina a futur, aquests serien els schemes:
+
+- cantina <-- Com el nom indica per a separar les dades de la cantina sobre les altres
+- pacient <-- Les taules que pot accedir el pacient
+- estructura <-- Sobre l'infraestructura de l'hospital
+- dades_per <-- Taules restants amb dades personals
+- seguretat <-- Taules per a comportar l'auditoria i seguretat de la base de dades, com els usuaris, logs...
+
+Perque hi ha un schema per als pacients i no per a metges o altre rol? 
+
+- Ens hem basat en un sistema per a separar dades estable, comprovem el rol amb menys permisos o que ens interesa mes tenir-ho separat, en aquest cas els pacients, per motius explicats anteriorment. Al tenir separat aquest rol es com que l'aillem de les altres dades.
+- Seguidament separem les dades per seccions ja que cada rol restant pot accedir a cadascun d'elles, així es conté organització 
+
 ## Matriu de seguretat
 
 Els permisos que té cada rol sobre els diferents taules de la BD. Per poder gestionar l'accés segons el rol de l'usuari, separar els permisos i protegir les dades.
