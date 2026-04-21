@@ -106,6 +106,7 @@ Per a aquestes dades s'han aplicat mesures de protecció de dades com:
 Així poder evitar l'accés no autoritzat, informació filtrada i la manipulació de les dades.
 
 ## Logs
+### Extens
 Els logs serveixen per a tenir coneixement sobre el que es fa a la base de dades.
 Es separara en dues parts:
 
@@ -144,3 +145,18 @@ Perque no s'utilitza directament el pg_stat_statements?
 - No es massa organitzat i es mes complicat de trobar-ho.
 
 Per això s'utilitzara en una taula amb aquestes matiexes dades de forma simplificada.
+
+### Login
+Quan un usuari estableix una conexió amb la base de dades sera interesant guardar-ho dins de la base de dades a log_access sense detall, ja que nomes es una conexió, per fer això s'hauria de modificar el .py ja que desde així podem indicar que sa establert la conexió i inserir-ho dins la base de dades:
+```
+#extreiem l'identificador de l'usuari
+SELECT id_usuari
+INTO usuari
+FROM seguretat.USUARI
+WHERE nom_usuari = usuari <--"Variable de l'usuari"
+
+#ho afegim dins de la base de dades
+INSERT INTO seguretat.LOG_ACCESS (accio, data, id_usuari) 
+VALUES ('LOGIN', NOW(), usuari);
+```
+On cada inici obtindra l'identificador de l'usuari i ho afegira com a registre dins la base de dades.
