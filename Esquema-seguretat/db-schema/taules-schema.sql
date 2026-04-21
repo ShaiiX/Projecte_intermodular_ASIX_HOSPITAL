@@ -8,7 +8,7 @@ CREATE TABLE seguretat.rol(
 CREATE TABLE seguretat.usuari (
     id_usuari SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password BYTEA NOT NULL,
+    password BYTEA NOT NULL,    -- bytea per emmagatzemar hash de contrasenya (binari) per guardarlo directament sense conversions a text
     actiu BOOLEAN DEFAULT TRUE,
     data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ultim_login TIMESTAMP
@@ -26,6 +26,44 @@ CREATE TABLE seguretat.log_access (
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     accio TEXT,
     taula_afectada TEXT
+);
+
+
+-- estructura
+CREATE TABLE estructura.planta(
+    id_planta SERIAL PRIMARY KEY,
+    num_planta INT UNIQUE,
+    descripcio TEXT
+);
+
+CREATE TABLE estructura.habitacio (
+    id_habitacio SERIAL PRIMARY KEY,
+    id_planta INT REFERENCES estructura.planta(id_planta),
+    num_habitacio INT,
+    capacitat INT,
+    estat VARCHAR(50),
+    CONSTRAINT unique_num_hab_pl UNIQUE (id_planta, num_habitacio)
+);
+
+CREATE TABLE estructura.quirofan(
+    id_planta INT REFERENCES estructura.planta(id_planta),
+    num_quirofan INT,
+    estat VARCHAR(50),
+    PRIMARY KEY (id_planta, num_quirofan)
+);
+
+CREATE TABLE estructura.tipus(
+    id_tipus SERIAL PRIMARY KEY,
+    model VARCHAR(50),
+    marca VARCHAR(50),
+    tipus VARCHAR(50)
+);
+
+CREATE TABLE estructura.aparell_medic(
+    id_aparell SERIAL PRIMARY KEY,
+    num_serie VARCHAR(100) UNIQUE,
+    data_manteniment DATE,
+    id_tipus INT REFERENCES estructura.tipus(id_tipus)
 );
 
 
@@ -70,38 +108,10 @@ CREATE TABLE dades_per.infermer_metge(
     PRIMARY KEY (id_infermer, id_metge)
 );
 
-
--- estructura
-CREATE TABLE estructura.planta(
-    id_planta SERIAL PRIMARY KEY,
-    num_planta INT UNIQUE,
-    descripcio TEXT
-);
-
-CREATE TABLE estructura.habitacio (
-    id_habitacio SERIAL PRIMARY KEY,
+CREATE TABLE dades_per.infermer_planta(
+    id_infermer INT REFERENCES dades_per.infermer(id_personal),
     id_planta INT REFERENCES estructura.planta(id_planta),
-    num_habitacio INT,
-    capacitat INT,
-    estat VARCHAR(50)
-);
-
-CREATE TABLE estructura.quirofan(
-    num_quirofan SERIAL PRIMARY KEY,
-    estat VARCHAR(50)
-);
-
-CREATE TABLE estructura.aparell_medic(
-    id_aparell SERIAL PRIMARY KEY,
-    num_serie VARCHAR(100) UNIQUE,
-    data_manteniment DATE
-);
-
-CREATE TABLE estructura.tipus(
-    id_tipus SERIAL PRIMARY KEY,
-    model VARCHAR(50),
-    marca VARCHAR(50),
-    tipus VARCHAR(50)
+    PRIMARY KEY (id_infermer, id_planta)
 );
 
 
@@ -110,7 +120,7 @@ CREATE TABLE pacient.pacient(
     id_pacient SERIAL PRIMARY KEY,
     nom VARCHAR(50) NOT NULL,
     cognoms VARCHAR(100),
-    dni VARCHA(9) UNIQUE NOT NULL,
+    dni VARCHAR(9) UNIQUE NOT NULL,
     telefon VARCHAR(20),
     email VARCHAR(100) UNIQUE,
     data_naixement DATE,
@@ -139,8 +149,8 @@ CREATE TABLE pacient.prova(
     id_visita INT REFERENCES pacient.visita(id_visita),
     tipus VARCHAR(50),
     resultat TEXT,
-    estat VARCHAR(50,
-    data DATE)
+    estat VARCHAR(50),
+    data DATE
 );
 
 CREATE TABLE pacient.operacio(
@@ -150,7 +160,10 @@ CREATE TABLE pacient.operacio(
     estat VARCHAR(50),
     data DATE,
     descripcio TEXT,
-    id_quirofan INT REFERENCES estructura.quirofan(num_quirofan)
+    id_planta INT,
+    num_quirofan INT,
+    FOREIGN KEY (id_planta, num_quirofan) 
+        REFERENCES estructura.quirofan(id_planta, num_quirofan)
 );
 
 CREATE TABLE pacient.ingres(
@@ -158,7 +171,7 @@ CREATE TABLE pacient.ingres(
     id_pacient INT REFERENCES pacient.pacient(id_pacient),
     data_ingres DATE,
     data_sortida_prevista DATE,
-    data_sortida_real DATE,
+    data_sortida_real DATE
 );
 
 
@@ -176,13 +189,13 @@ CREATE TABLE dades_per.medicament (
     id_medicament SERIAL PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
     descripcio TEXT,
-    preu_u NUMERIC,
+    preu_u NUMERIC
 );
 
 CREATE TABLE pacient.recepta(
     id_recepta SERIAL PRIMARY KEY,
     id_pacient INT REFERENCES pacient.pacient(id_pacient),
-    id_merge INT REFERENCES dades_per.metge(id_personal),
+    id_metge INT REFERENCES dades_per.metge(id_personal),
     data DATE,
     descripcio TEXT,
     import_total NUMERIC

@@ -1,6 +1,7 @@
 CREATE DATABASE hospivibe;
 USE hospivibe;
 
+-- creacio schemes
 CREATE SCHEMA IF NOT EXISTS cantina;
 CREATE SCHEMA IF NOT EXISTS pacient;
 CREATE SCHEMA IF NOT EXISTS estructura;
