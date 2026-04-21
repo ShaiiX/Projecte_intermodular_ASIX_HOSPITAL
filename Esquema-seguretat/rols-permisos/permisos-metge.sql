@@ -1,8 +1,11 @@
+GRANT USAGE ON SCHEMA pacient TO metge_role;
+GRANT USAGE ON SCHEMA dades_per TO metge_role;
+GRANT USAGE ON SCHEMA estructura TO metge_role;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON pacient.VISITA TO metge_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON pacient.PROVA TO metge_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON pacient.OPERACIO TO metge_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON pacient.RECEPTA TO metge_role;
-GRANT SELECT, INSERT, UPDATE ON pacient.EXPEDIENT TO metge_role;
+GRANT SELECT, UPDATE ON pacient.EXPEDIENT TO metge_role;
 GRANT SELECT ON pacient.PACIENT TO metge_role;
 GRANT SELECT ON pacient.INGRES TO metge_role;
