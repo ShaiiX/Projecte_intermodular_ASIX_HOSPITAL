@@ -14,6 +14,43 @@ El rol pacient, perque hi es?
 
 Es coneix a hospitals que hi ha el sistema de escaneijar la tarjeta sanitaria o altres i es on et proporciona visites, proves... Son aquestes dades que podra accedir aquest pacient desde la maquina que s'incorporaran, quan arribi el cas, on es posaràn les limitacions desde l'aplicatiu a més desde la base de dades per si es el cas, no es necesari que aquest pacient pugui accedir a les dades del personal si arriba a ocurrir alguna incidencia.
 
+## Matriu de seguretat
+
+Els permisos que té cada rol sobre els diferents taules de la BD. Per poder gestionar l'accés segons el rol de l'usuari, separar els permisos i protegir les dades.
+
+| Entitat / Taula | Admin | Metge | Infermer | Vari | Pacient |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Personal | All | R | - | - | - |
+| Infermer | All | R | - | - | - |
+| Infermer_planta | All | R | - | - | - |
+| Infermer_metge | All | R | - | - | - |
+| Planta | All | R | - | - | - |
+| Quirofan | All | R | - | - | - |
+| Aparell_medic | All | R | - | - | - |
+| Tipus | All | R | - | - | - |
+| Operacio | All | All | R | - | R (propi) |
+| Infermer_Operacio | All | All | R | - | - |
+| Metge | All | R | - | - | - |
+| Visita | All | All | R | - | R (propi) |
+| Prova | All | All | R | - | R (propi) |
+| Expedient | All | All | R | R | R (propi) |
+| Pacient | All | All | R | R | R (propi) |
+| Ingres | All | All | R | - | R (propi) |
+| Habitacio | All | R | R | - | - |
+| Recepta | All | All | All | - | R (propi) |
+| Recepta_Visita | All | All | R | - | R (propi) |
+| Recepta_Ingres | All | All | All | - | R (propi) |
+| Linea_Recepta | All | All | All | - | R (propi) |
+| Medicament | All | R | R | - | - |
+| Usuari | All | - | - | - | - |
+| Rol | All | - | - | - | - |
+| Usuari_Rol | All | - | - | - | - |
+| Log_Access | All | - | - | - | - |
+| Log_Detall | All | - | - | - | - |
+| Log_Library | All | - | - | - | - |
+| Empresa_Externa | All | - | - | - | - |
+| Facturacio_Cantina | All | - | - | - | - |
+
 ## Schema 
 S'ha separat les taules en diferents schemas, per a tenir mes control ordre i seguretat dins les dades, també facilitara feina a futur, aquests serien els schemes:
 
@@ -28,9 +65,7 @@ Perque hi ha un schema per als pacients i no per a metges o altre rol?
 - Ens hem basat en un sistema per a separar dades estable, comprovem el rol amb menys permisos o que ens interesa mes tenir-ho separat, en aquest cas els pacients, per motius explicats anteriorment. Al tenir separat aquest rol es com que l'aillem de les altres dades.
 - Seguidament separem les dades per seccions ja que cada rol restant pot accedir a cadascun d'elles, així es conté organització 
 
-## Matriu de seguretat
 
-Els permisos que té cada rol sobre els diferents taules de la BD. Per poder gestionar l'accés segons el rol de l'usuari, separar els permisos i protegir les dades.
 
 ## Configuració SSL
 
