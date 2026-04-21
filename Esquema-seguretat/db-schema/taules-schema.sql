@@ -179,5 +179,49 @@ CREATE TABLE dades_per.medicament (
     preu_u NUMERIC,
 );
 
+CREATE TABLE pacient.recepta(
+    id_recepta SERIAL PRIMARY KEY,
+    id_pacient INT REFERENCES pacient.pacient(id_pacient),
+    id_merge INT REFERENCES dades_per.metge(id_personal),
+    data DATE,
+    descripcio TEXT,
+    import_total NUMERIC
+);
+
+CREATE TABLE pacient.linea_recepta(
+    id_linea SERIAL PRIMARY KEY,
+    id_recepta INT REFERENCES pacient.recepta(id_recepta),
+    id_medicament INT REFERENCES dades_per.medicament(id_medicament),
+    quantitat INT,
+    cost NUMERIC
+);
+
+
+-- relacions visita - ingres
+CREATE TABLE pacient.recepta_visita(
+    id_recepta INT REFERENCES pacient.recepta(id_recepta),
+    id_visita INT REFERENCES pacient.visita(id_visita),
+    PRIMARY KEY (id_recepta, id_visita)
+);
+
+
+-- cantina
+CREATE TABLE cantina.empresa_externa (
+    id_empresa SERIAL PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    direccio TEXT,
+    telefon VARCHAR(20),
+    correu VARCHAR(100) UNIQUE,
+    persona_contacte VARCHAR(50)
+);
+
+CREATE TABLE cantina.facturacio_cantina(
+    id_tiquet SERIAL PRIMARY KEY,
+    id_empresa INT REFERENCES cantina.empresa_externa(id_empresa),
+    data DATE,
+    import_total NUMERIC,
+    percentatge NUMERIC,
+    import_lloguer NUMERIC
+);
 
 
