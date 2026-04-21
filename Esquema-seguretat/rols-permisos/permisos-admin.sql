@@ -1,0 +1,6 @@
+-- té control total
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA seguretat TO admin_role;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA estructura TO admin_role;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA dades_per TO admin_role;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA pacient TO admin_role;
+
