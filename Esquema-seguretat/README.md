@@ -2,13 +2,13 @@
 
 ## Rols del sistema
 
-Hem definit els rols segons els permisos:
+Hem definit els [rols](./rols-permisos/rols.sql) segons els permisos([access al la base de dades](./rols-permisos/permisos-acces-schema.sql)):
 
-- Admin: control complet del sistema
-- Metge: accés a dades mèdiques i gestió de pacients
-- Infermer: suport en consultes i accés limitat
-- Vari: personal administratiu
-- Pacient: accés únic a les seves dades
+- [Admin](./rols-permisos/permisos-admin.sql): control complet del sistema
+- [Metge](./rols-permisos/permisos-metge.sql): accés a dades mèdiques i gestió de pacients
+- [Infermer](./rols-permisos/permisos-infermer.sql): suport en consultes i accés limitat
+- [Vari](./rols-permisos/permisos-vari.sql): personal administratiu
+- [Pacient](./rols-permisos/permisos-pacient.sql): accés únic a les seves dades
 
 El rol pacient, perque hi es? 
 
