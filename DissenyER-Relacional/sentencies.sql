@@ -146,11 +146,12 @@ CREATE TABLE PLANTA (
 
 CREATE TABLE HABITACIO (
     id_habitacio INT,
-    num_habitacio VARCHAR(20) NOT NULL,
+    num_habitacio INT NOT NULL,
     capacitat INT NOT NULL,
     estat VARCHAR(50) NOT NULL,
     id_planta INT,
     CONSTRAINT pk_habitacio PRIMARY KEY (id_habitacio),
+    CONSTRAINT uq_habitacio_planta_num UNIQUE (id_planta, num_habitacio),
     CONSTRAINT fk_habitacio_planta 
         FOREIGN KEY (id_planta) REFERENCES PLANTA(id_planta)
 );
