@@ -145,6 +145,8 @@ Aquesta extensio incorpora funcions per a quan es faci qualsevol select es mostr
 
 ## Normativa AGPD
 
+[Estructura completa](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/Esquema-seguretat/agpd)
+
 Hem seguit una estructura per garantir el compliment de la normativa AGPD
 
 - Dades personals: nom, email...
