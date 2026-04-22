@@ -49,7 +49,7 @@ El control d'accés es basa en els usuaris autenticats, assignació dels rols, p
 
 Per protegir les dades s'utilitza una extensió de PostgreSQL "Anonymizer". Les dades es veuen amb asteriscos, algunes ocultes i d'altres només parcialment per poder identificar que les dades introduïdes estàn correctas, per exemple:
 
-DNI: *****12A
+DNI: ******12A
 
 ## Drets dels usuaris RGPD/ARCO
 
