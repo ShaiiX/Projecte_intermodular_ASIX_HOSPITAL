@@ -137,17 +137,19 @@ Renovació anual automàticament
 
 ## Data Masking
 
-## Data Masking
+Per protegir les dades sensibles i evitar mostrar informació real als usuaris sense permisos, s’ha implementat un sistema de data massking. Aquest sistema permet mostrar les dades de forma parcial o oculta (per exemple: w*****s@gmail.com), garantint la privacitat.
 
-Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sense permisos implementarem un sistema que mostra aquestes dades de forma oculta com w*****s@gmail.com.
+Aquesta funcionalitat es basa en una extensió de PostgreSql anomenada **anonymizer (anon)**.
 
-Això funciona gràcies a una extensió de PostgreSQL anomenada anonymizer (anon), que és fàcil d’incorporar al fitxer postgresql.conf:
+### Configuració
+
+Per utilitzar aquesta extensió, primer cal activar-la al fitxer de configuració del servidor:
 
 ```
 shared_preload_libraries = 'anon'
 ```
 
-Activar anon:
+Un cop reiniciat el servidor, s’activa a la base de dades amb:
 
 ```
 CREATE EXTENSION anon;
@@ -155,20 +157,33 @@ SELECT anon.init();
 SELECT anon.start_dynamic_masking();
 ```
 
-Aquesta extensió incorpora funcions per a quan es faci qualsevol Select es mostrin les dades amb el data masking. Les dades que creiem necessàries per aplicar aquest sistema són (taula.columna):
+### Funcionament
 
-- usuari.contrasenya
-- personal.dni 
-- personal.direccio
-- personal.telefon
-- pacient.dni 
-- pacient.tarjeta_sanitaria
-- pacient.telefon
-- expedient.historial
-- expedient.observacions
-- visita.diagnostic
+L’extensió permet definir regles de mascarament sobre columnes concretes. Quan es fa una Select les dades es mostren automàticament protegides segons el rol de l’usuari.
 
-El data masking s’aplica als rols que no necessiten accedir a dades sensibles completes (principi de mínim privilegi), evitant així l’exposició innecessària d’informació personal i mèdica.
+S’utilitza la funció `anon.mask_if` que aplica una màscara només si l’usuari no té permisos suficients.
+
+### Dades protegides
+
+S’han identificat com a dades sensibles les següents:
+
+- seguretat.usuari.contrasenya
+- dades_per.personal.dni 
+- dades_per.personal.direccio
+- dades_per.personal.telefon
+- pacient.pacient.dni 
+- pacient.pacient.tarjeta_sanitaria
+- pacient.pacient.telefon
+- pacient.expedient.historial
+- pacient.expedient.observacions
+- pacient.visita.diagnostic
+
+### Control d'accés
+
+El data masking s’aplica als rols que no necessiten accedir a dades completes (**mínim privilegi**)
+
+- Admin i metge poden veure dades reals
+- Altres rols veuen dades enmascarades
 
 ## Normativa AGPD
 
