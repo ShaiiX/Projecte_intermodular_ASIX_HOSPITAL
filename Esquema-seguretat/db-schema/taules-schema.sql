@@ -11,7 +11,7 @@ CREATE TABLE seguretat.USUARI (
     password BYTEA NOT NULL,    -- bytea per emmagatzemar hash de contrasenya (binari) per guardarlo directament sense conversions a text
     actiu BOOLEAN DEFAULT TRUE,
     data_creacio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ultim_login TIMESTAMP
+    ultima_activitat TIMESTAMP
 );
 
 CREATE TABLE seguretat.USUARI_ROL (

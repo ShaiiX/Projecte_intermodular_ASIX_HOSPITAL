@@ -104,7 +104,7 @@ pg_hba.conf (totes les connexions amb SSL)
 hostssl all all 192.168.0.0/24 md5
 ```
 
-## Automatitcació
+## Automatització
 
 Límit de validesa del certificat de 365 dies. Script manual:
 
@@ -206,21 +206,22 @@ Perque no s'utilitza directament el pg_stat_statements?
 Per això s'utilitzara en una taula amb aquestes matiexes dades de forma simplificada.
 
 ### Login
-Quan un usuari estableix una conexió amb la base de dades sera interesant guardar-ho dins de la base de dades a log_access sense detall, ja que nomes es una conexió, per fer això s'hauria de modificar el .py ja que desde així podem indicar que sa establert la conexió i inserir-ho dins la base de dades:
-```
-#extreiem l'identificador de l'usuari
-SELECT id_usuari
-INTO usuari
-FROM seguretat.USUARI
-WHERE nom_usuari = usuari <--"Variable de l'usuari"
-
-#ho afegim dins de la base de dades
-INSERT INTO seguretat.LOG_ACCESS (accio, data, id_usuari) 
-VALUES ('LOGIN', NOW(), usuari);
-
-#modifiquem l'activitat de l'usuari
-UPDATE seguretat.USUARI
-SET actiu = True
-WHERE id_usuari = usuari
-```
+Quan un usuari estableix una conexió amb la base de dades sera interesant guardar-ho dins de la base de dades a log_access sense detall, ja que nomes es una conexió, per fer això s'hauria de modificar el .py ja que desde així podem indicar que sa establert la conexió.
 On cada inici obtindra l'identificador de l'usuari i ho afegira com a registre dins la base de dades.
+[login.sql](/Esquema-seguretat/logs/usuaris/Login.sql)
+
+Per a indicar i mantenir l'activiat de l'usuari, on cada acció que faci l'usuari al sistema amb la base de dades s'haura de actualitzar el registre:
+```
+UPDATE usuaris SET ultima_activitat = NOW(), is_online = TRUE WHERE id = [ID_USUARI];
+```
+### Usuari
+Com es pot veure a la base de dades hi ha incorporat si l'usuari esta actiu o no, com només anem amb postgresql, seria millor fer-ho amb redis o altres sistemes, ja que s'actualitzaran dades cada poc temps per a tenir controlada la activitat de l'usuari, però per a fer-ho de forma que funcioni amb el sistema actual i base de dades seria s'aquesta forma:
+
+- Anteriorment he mostrat com indicar que l'usuari esta actiu, ja que el login es un process obligatori, així que es sap que esat actiu l'usuari.
+
+Per indicar si l'usuari no esta actiu es fara de dues formes, el [logoff voluntari](./logs/usuaris/Logoff_voluntari.sql), que seria el logoff de l'aplicació de forma manual i altre de [logoff timeout](./logs/usuaris/Logoff_timeout.sql), basicament que despres de un temps (per exemple 5 minuts) es comprova si ha pasat uns minuts indicats de la ultima activitat de l'usuari. On també s'indicara en la aplicacio si l'usuari esta actiu o no per a que torni a iniciar sesio dins del .py.
+
+Per activar automaticament el logoff de timeout sera una tasca del cron que s'activa cada 5 minuts amb l'usuari administrador de postgresql:
+```
+*/5 * * * * psql -U usuari -d base_de_dades -c "SELECT fn_tancar_sessions_expirades();" <-- la funcio dins del sql del logoff
+```
