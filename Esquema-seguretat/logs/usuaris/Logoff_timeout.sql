@@ -15,7 +15,7 @@ BEGIN
 
     INSERT INTO seguretat.LOG_ACCESS (accio, data, id_usuari)
     SELECT 'LOGOFF_TIMEOUT', NOW(), id
-    FROM seguretat.USUARIS 
+    FROM seguretat.USUARI 
     WHERE actiu = TRUE 
       AND ultima_activitat < (NOW() - (minuts_inactivitat || ' minutes')::INTERVAL);
 
