@@ -94,15 +94,17 @@ postgresql.conf
 
 ```
 ssl = on
-ssl_cert_file = 'server.crt'
-ssl_key_file = 'server.key'
+ssl_cert_file = '/var/lib/postgresql/server.crt'
+ssl_key_file = '/var/lib/postgresql/server.key'
 ```
 
 pg_hba.conf (totes les connexions amb SSL)
 
 ```
-hostssl all all 192.168.0.0/24 md5
+hostssl all all 192.168.0.0/24 scram-sha-256
 ```
+
+Utilitzem el scram-sha-256 perquè és més segur i el md5 està obsolet.
 
 ## Automatitcació
 
@@ -110,8 +112,21 @@ Límit de validesa del certificat de 365 dies. Script manual:
 
 ```
 #!/bin/bash
-openssl req -new -x509 -key server.key -out server.crt -days 365
+
+openssl genrsa -out /var/lib/postgresql/server.key 2048
+openssl req -new -x509 -key /var/lib/postgresql/server.key \
+-out /var/lib/postgresql/server.crt -days 365 -subj "/CN=localhost"
+
+chmod 600 /var/lib/postgresql/server.key
+chown postgres:postgres /var/lib/postgresql/server.key /var/lib/postgresql/server.crt
+
 systemctl restart postgresql
+```
+
+Donar permisos:
+
+```
+chmod +x /usr/local/bin/script_ssl.sh
 ```
 
 El millor seria automatitzar la renovació amb un script que reutilitzi la clau que ja existeix o que utilitzi certificats gestionats (com Let's Encrypt).
