@@ -10,7 +10,7 @@ Hem definit els [rols](./rols-permisos/rols.sql) segons els permisos([access al 
 - [Vari](./rols-permisos/permisos-vari.sql): personal administratiu
 - [Pacient](./rols-permisos/permisos-pacient.sql): accés únic a les seves dades
 
-El rol pacient, perque hi es? 
+El rol pacient, perquè hi és? 
 
 Es coneix a hospitals que hi ha el sistema de escaneijar la tarjeta sanitaria o altres i es on et proporciona visites, proves... Son aquestes dades que podra accedir aquest pacient desde la maquina que s'incorporaran, quan arribi el cas, on es posaràn les limitacions desde l'aplicatiu a més desde la base de dades per si es el cas, no es necesari que aquest pacient pugui accedir a les dades del personal si arriba a ocurrir alguna incidencia.
 
@@ -65,8 +65,6 @@ Perque hi ha un schema per als pacients i no per a metges o altre rol?
 - Ens hem basat en un sistema per a separar dades estable, comprovem el rol amb menys permisos o que ens interesa mes tenir-ho separat, en aquest cas els pacients, per motius explicats anteriorment. Al tenir separat aquest rol es com que l'aillem de les altres dades.
 - Seguidament separem les dades per seccions ja que cada rol restant pot accedir a cadascun d'elles, així es conté organització 
 
-
-
 ## Configuració SSL
 
 L'implementem per protegir la comunicació entre l'aplicació i la BD.
@@ -94,15 +92,17 @@ postgresql.conf
 
 ```
 ssl = on
-ssl_cert_file = 'server.crt'
-ssl_key_file = 'server.key'
+ssl_cert_file = '/var/lib/postgresql/server.crt'
+ssl_key_file = '/var/lib/postgresql/server.key'
 ```
 
 pg_hba.conf (totes les connexions amb SSL)
 
 ```
-hostssl all all 192.168.0.0/24 md5
+hostssl all all 192.168.0.0/24 scram-sha-256
 ```
+
+Utilitzem el scram-sha-256 perquè és més segur i el md5 està obsolet.
 
 ## Automatització
 
@@ -110,8 +110,21 @@ Límit de validesa del certificat de 365 dies. Script manual:
 
 ```
 #!/bin/bash
-openssl req -new -x509 -key server.key -out server.crt -days 365
+
+openssl genrsa -out /var/lib/postgresql/server.key 2048
+openssl req -new -x509 -key /var/lib/postgresql/server.key \
+-out /var/lib/postgresql/server.crt -days 365 -subj "/CN=localhost"
+
+chmod 600 /var/lib/postgresql/server.key
+chown postgres:postgres /var/lib/postgresql/server.key /var/lib/postgresql/server.crt
+
 systemctl restart postgresql
+```
+
+Donar permisos:
+
+```
+chmod +x /usr/local/bin/script_ssl.sh
 ```
 
 El millor seria automatitzar la renovació amb un script que reutilitzi la clau que ja existeix o que utilitzi certificats gestionats (com Let's Encrypt).
@@ -124,26 +137,53 @@ Renovació anual automàticament
 
 ## Data Masking
 
-Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sense permisos implementarem un sistema que mostra aquestes dades de forma oculta com w*****s@gmail.com.
+Per protegir les dades sensibles i evitar mostrar informació real als usuaris sense permisos, s’ha implementat un sistema de data massking. Aquest sistema permet mostrar les dades de forma parcial o oculta (per exemple: w*****s@gmail.com), garantint la privacitat.
 
-Això funciona gracies a una expansio del postgresql nombrada anonymizer mes coneguda com a anon, es facil de incorporar en el postgres.conf:
+Aquesta funcionalitat es basa en una extensió de PostgreSql anomenada **anonymizer (anon)**.
+
+### Configuració
+
+Per utilitzar aquesta extensió, primer cal activar-la al fitxer de configuració del servidor:
+
 ```
 shared_preload_libraries = 'anon'
 ```
-Aquesta extensio incorpora funcions per a quan es faci qualsevol select es mostri les dades amb el datamasking, les dades que creiem necesaries per a aplicar aquest sistema son (taula.columna):
 
-- usuari.contrasenya
-- personal.dni 
-- personal.direccio
-- personal.telefon
-- pacient.dni 
-- pacient.tarjeta_sanitaria
-- pacient.telefon
-- expedient.historial
-- expedient.observacions
-- visita.diagnostic
+Un cop reiniciat el servidor, s’activa a la base de dades amb:
 
-El data masking s’aplica als rols que no necessiten accedir a dades sensibles completes (mínim privilegi). Per evitar l’exposició innecessària d’informació personal i mèdica.
+```
+CREATE EXTENSION anon;
+SELECT anon.init();
+SELECT anon.start_dynamic_masking();
+```
+
+### Funcionament
+
+L’extensió permet definir regles de mascarament sobre columnes concretes. Quan es fa una Select les dades es mostren automàticament protegides segons el rol de l’usuari.
+
+S’utilitza la funció `anon.mask_if` que aplica una màscara només si l’usuari no té permisos suficients.
+
+### Dades protegides
+
+S’han identificat com a dades sensibles les següents:
+
+- seguretat.usuari.contrasenya
+- dades_per.personal.dni 
+- dades_per.personal.direccio
+- dades_per.personal.telefon
+- pacient.pacient.dni 
+- pacient.pacient.tarjeta_sanitaria
+- pacient.pacient.telefon
+- pacient.expedient.historial
+- pacient.expedient.observacions
+- pacient.visita.diagnostic
+
+### Control d'accés
+
+El data masking s’aplica als rols que no necessiten accedir a dades completes (**mínim privilegi**)
+
+- Admin i metge poden veure dades reals
+- Altres rols veuen dades enmascarades
 
 ## Normativa AGPD
 
