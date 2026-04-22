@@ -62,4 +62,12 @@ També tenen dret a l'oblit i a la limitació del tractament.
 
 ## Compliment de la normativa
 
+*Aquest sistema compleix amb:*
+*- RGPD*
+*- LOPDGDD*
 
+*Principis aplicats:*
+*- Minimització de dades*
+*- Finalitat específica*
+*- Seguretat*
+*- Transparència*
