@@ -7,7 +7,7 @@ Aquest document defineix les mesures de seguretat aplicades en la gestió de les
 Quan es treuen dades del sistema, es segueixen una sèrie de mesures per evitar accessos no autoritzats o usos indeguts:
 
 - Només usuaris autoritzats poden realitzar extraccions
-- Registre d'activitat (logs) per controlar qui accedeix i què fa
+- Regstre d'activitat (logs) per controlar qui accedeix i què fa
 - Validació de la finalitat de l’extracció (només per usos justificats)
 
 A més, es revisa periòdicament l’ús de les dades exportades per assegurar que no es fa un ús incorrecte o fora del sistema.
