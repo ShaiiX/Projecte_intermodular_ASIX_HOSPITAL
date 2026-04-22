@@ -124,22 +124,24 @@ Renovació anual automàticament
 
 ## Data Masking
 
-Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sense permisos. Ho hem implementat utilitzant vistes sql que oculten les dades.
+Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sense permisos implementarem un sistema que mostra aquestes dades de forma oculta com w*****s@gmail.com.
 
-- DNI
-- Adreça
-- Telèfon
-- Email
-- Historial mèdic
+Això funciona gracies a una expansio del postgresql nombrada anonymizer mes coneguda com a anon, es facil de incorporar en el postgres.conf:
+```
+shared_preload_libraries = 'anon'
+```
+Aquesta extensio incorpora funcions per a quan es faci qualsevol select es mostri les dades amb el datamasking, les dades que creiem necesaries per a aplicar aquest sistema son (taula.columna):
 
-**Vistes creades**
-- pacient_mask:
-    - DNI
-    - Telèfon
-    - Email
-- expedient_mask: contingut remplaçat per un text
-- vista_mask: Oculta els diagnòstics
-- recepta_mask: descripció oculta (protegeix la info de les receptes)
+- usuari.contrasenya
+- personal.dni 
+- personal.direccio
+- personal.telefon
+- pacient.dni 
+- pacient.tarjeta_sanitaria
+- pacient.telefon
+- expedient.historial
+- expedient.observacions
+- visita.diagnostic
 
 ## Normativa AGPD
 
@@ -211,5 +213,10 @@ WHERE nom_usuari = usuari <--"Variable de l'usuari"
 #ho afegim dins de la base de dades
 INSERT INTO seguretat.LOG_ACCESS (accio, data, id_usuari) 
 VALUES ('LOGIN', NOW(), usuari);
+
+#modifiquem l'activitat de l'usuari
+UPDATE seguretat.USUARI
+SET actiu = True
+WHERE id_usuari = usuari
 ```
 On cada inici obtindra l'identificador de l'usuari i ho afegira com a registre dins la base de dades.
