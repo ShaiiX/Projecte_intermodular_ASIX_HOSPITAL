@@ -1,19 +1,29 @@
-CREATE OR REPLACE FUNCTION fn_tancar_sessions_expirades() 
-RETURNS VOID AS $$
+CREATE OR REPLACE PROCEDURE tancar_sessions_expirades()
+LANGUAGE plpgsql
+AS $$
 DECLARE
     minuts_inactivitat INTEGER := 15;
+    hi_ha_actius BOOLEAN;
 BEGIN
+    SELECT EXISTS (SELECT 1 FROM seguretat.USUARI WHERE actiu = TRUE) 
+    INTO hi_ha_actius;
+
+    -- Si no hi ha ningú, sortim directament
+    IF NOT hi_ha_actius THEN
+        RETURN;
+    END IF;
+
     INSERT INTO seguretat.LOG_ACCESS (accio, data, id_usuari)
     SELECT 'LOGOFF_TIMEOUT', NOW(), id
     FROM seguretat.USUARIS 
-    WHERE is_online = TRUE 
-      AND ultima_activitat < (NOW() - (minuts_inactivitat || ' minuts')::INTERVAL);
+    WHERE actiu = TRUE 
+      AND ultima_activitat < (NOW() - (minuts_inactivitat || ' minutes')::INTERVAL);
 
-    UPDATE seguretat.USUARIS
-    SET is_online = FALSE 
-    WHERE is_online = TRUE 
-      AND ultima_activitat < (NOW() - (minuts_inactivitat || ' minuts')::INTERVAL);
-      
-    RAISE NOTICE 'Sessions expirades processades correctament.';
+    UPDATE seguretat.USUARI
+    SET actiu = FALSE 
+    WHERE actiu = TRUE 
+      AND ultima_activitat < (NOW() - (minuts_inactivitat || ' minutes')::INTERVAL);
+  
+    COMMIT; 
 END;
-$$ LANGUAGE plpgsql;
+$$;

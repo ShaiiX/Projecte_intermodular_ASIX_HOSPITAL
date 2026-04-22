@@ -252,7 +252,7 @@ On cada inici obtindra l'identificador de l'usuari i ho afegira com a registre d
 
 Per a indicar i mantenir l'activiat de l'usuari, on cada acció que faci l'usuari al sistema amb la base de dades s'haura de actualitzar el registre:
 ```
-UPDATE usuaris SET ultima_activitat = NOW(), is_online = TRUE WHERE id = [ID_USUARI];
+UPDATE usuaris SET ultima_activitat = NOW(), actiu = TRUE WHERE id = idusuari;
 ```
 ### Usuari
 Com es pot veure a la base de dades hi ha incorporat si l'usuari esta actiu o no, com només anem amb postgresql, seria millor fer-ho amb redis o altres sistemes, ja que s'actualitzaran dades cada poc temps per a tenir controlada la activitat de l'usuari, però per a fer-ho de forma que funcioni amb el sistema actual i base de dades seria s'aquesta forma:
@@ -263,5 +263,5 @@ Per indicar si l'usuari no esta actiu es fara de dues formes, el [logoff volunta
 
 Per activar automaticament el logoff de timeout sera una tasca del cron que s'activa cada 5 minuts amb l'usuari administrador de postgresql:
 ```
-*/5 * * * * psql -U usuari -d base_de_dades -c "SELECT fn_tancar_sessions_expirades();" <-- la funcio dins del sql del logoff
+*/5 * * * * psql -U usuari -d base_de_dades -c "CALL tancar_sessions_expirades();" <-- la funcio dins del sql del logoff
 ```
