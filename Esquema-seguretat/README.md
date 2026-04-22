@@ -10,7 +10,7 @@ Hem definit els [rols](./rols-permisos/rols.sql) segons els permisos([access al 
 - [Vari](./rols-permisos/permisos-vari.sql): personal administratiu
 - [Pacient](./rols-permisos/permisos-pacient.sql): accés únic a les seves dades
 
-El rol pacient, perque hi es? 
+El rol pacient, perquè hi és? 
 
 Es coneix a hospitals que hi ha el sistema de escaneijar la tarjeta sanitaria o altres i es on et proporciona visites, proves... Son aquestes dades que podra accedir aquest pacient desde la maquina que s'incorporaran, quan arribi el cas, on es posaràn les limitacions desde l'aplicatiu a més desde la base de dades per si es el cas, no es necesari que aquest pacient pugui accedir a les dades del personal si arriba a ocurrir alguna incidencia.
 
