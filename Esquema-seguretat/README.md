@@ -143,7 +143,7 @@ Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sen
 
 ## Normativa AGPD
 
-Estructura completa: 
+[Estructura completa](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/Esquema-seguretat/agpd)
 
 Hem seguit una estructura per garantir el compliment de la normativa AGPD
 
