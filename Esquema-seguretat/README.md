@@ -65,8 +65,6 @@ Perque hi ha un schema per als pacients i no per a metges o altre rol?
 - Ens hem basat en un sistema per a separar dades estable, comprovem el rol amb menys permisos o que ens interesa mes tenir-ho separat, en aquest cas els pacients, per motius explicats anteriorment. Al tenir separat aquest rol es com que l'aillem de les altres dades.
 - Seguidament separem les dades per seccions ja que cada rol restant pot accedir a cadascun d'elles, així es conté organització 
 
-
-
 ## Configuració SSL
 
 L'implementem per protegir la comunicació entre l'aplicació i la BD.
@@ -139,13 +137,25 @@ Renovació anual automàticament
 
 ## Data Masking
 
+## Data Masking
+
 Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sense permisos implementarem un sistema que mostra aquestes dades de forma oculta com w*****s@gmail.com.
 
-Això funciona gracies a una expansio del postgresql nombrada anonymizer mes coneguda com a anon, es facil de incorporar en el postgres.conf:
+Això funciona gràcies a una extensió de PostgreSQL anomenada anonymizer (anon), que és fàcil d’incorporar al fitxer postgresql.conf:
+
 ```
 shared_preload_libraries = 'anon'
 ```
-Aquesta extensio incorpora funcions per a quan es faci qualsevol select es mostri les dades amb el datamasking, les dades que creiem necesaries per a aplicar aquest sistema son (taula.columna):
+
+Activar anon:
+
+```
+CREATE EXTENSION anon;
+SELECT anon.init();
+SELECT anon.start_dynamic_masking();
+```
+
+Aquesta extensió incorpora funcions per a quan es faci qualsevol Select es mostrin les dades amb el data masking. Les dades que creiem necessàries per aplicar aquest sistema són (taula.columna):
 
 - usuari.contrasenya
 - personal.dni 
@@ -158,7 +168,7 @@ Aquesta extensio incorpora funcions per a quan es faci qualsevol select es mostr
 - expedient.observacions
 - visita.diagnostic
 
-El data masking s’aplica als rols que no necessiten accedir a dades sensibles completes (mínim privilegi). Per evitar l’exposició innecessària d’informació personal i mèdica.
+El data masking s’aplica als rols que no necessiten accedir a dades sensibles completes (principi de mínim privilegi), evitant així l’exposició innecessària d’informació personal i mèdica.
 
 ## Normativa AGPD
 
