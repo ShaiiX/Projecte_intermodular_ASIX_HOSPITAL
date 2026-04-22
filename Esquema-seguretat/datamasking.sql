@@ -1,22 +1,79 @@
---usuari.contrasenya
---es fara que la contrasenya cada que es fa select es mostri com a 8 caracters de *
+--- USUARIS ---
+-- Contrasenya: 8 asteriscos
 SECURITY LABEL FOR anon ON COLUMN usuaris.contrasenya 
-IS 'MASKED WITH FUNCTION anon.dummy_filled_string(8, ''*'')';
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    contrasenya,
+    anon.dummy_filled_string(8, ''*'')
+)';
 
--- personal.dni 
---es mostrara els 3 ultims caracters del dni 
+--- PERSONAL ---
+-- DNI: XXXXXXXX + 3 últimos
 SECURITY LABEL FOR anon ON COLUMN personal.dni
-IS 'MASKED WITH FUNCTION anon.anon.partial(0,'XXXXXXXX',3)';
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    dni,
+    anon.partial(0, ''XXXXXXXX'', 3)
+)';
 
--- personal.direccio
---es mostrara els 3 ultims caracters del dni 
-SECURITY LABEL FOR anon ON COLUMN personal.dni
-IS 'MASKED WITH FUNCTION anon.anon.partial(0,'XXXXXXXX',3)';
+-- Direcció: Oculta con texto genérico
+SECURITY LABEL FOR anon ON COLUMN personal.direccio
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    direccio,
+    ''DADA PROTEGIDA''
+)';
 
--- personal.telefon
--- pacient.dni 
--- pacient.tarjeta_sanitaria
--- pacient.telefon
--- expedient.historial
--- expedient.observacions
--- visita.diagnostic
+-- Telèfon: Formato parcial
+SECURITY LABEL FOR anon ON COLUMN personal.telefon
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    telefon,
+    anon.partial(3, ''-XXXX'', 0)
+)';
+
+--- PACIENT ---
+-- DNI y Tarjeta Sanitaria
+SECURITY LABEL FOR anon ON COLUMN pacient.dni
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    dni,
+    anon.partial(0, ''XXXXXXXX'', 3)
+)';
+
+SECURITY LABEL FOR anon ON COLUMN pacient.tarjeta_sanitaria
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    tarjeta_sanitaria,
+    anon.partial(4, ''-XXXX-XXXX'', 0)
+)';
+
+SECURITY LABEL FOR anon ON COLUMN pacient.telefon
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    telefon,
+    anon.partial(3, ''-XXXX'', 0)
+)';
+
+--- EXPEDIENT I VISITA ---
+-- Historial, Observacions y Diagnòstic
+SECURITY LABEL FOR anon ON COLUMN expedient.historial
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    historial,
+    ''ACCÉS RESTRINGIT A PERSONAL MÈDIC''
+)';
+
+SECURITY LABEL FOR anon ON COLUMN expedient.observacions
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    observacions,
+    ''---''
+)';
+
+SECURITY LABEL FOR anon ON COLUMN visita.diagnostic
+IS 'MASKED WITH FUNCTION anon.mask_if(
+    NOT (pg_has_role(current_user, ''metge'', ''member'') OR pg_has_role(current_user, ''admin'', ''member'')),
+    diagnostic,
+    ''CONFIDENCIAL''
+)';
