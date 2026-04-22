@@ -143,6 +143,8 @@ Per protegir les dades sensibles, per evitar mostrar dades reals als usuaris sen
 
 ## Normativa AGPD
 
+Estructura completa: 
+
 Hem seguit una estructura per garantir el compliment de la normativa AGPD
 
 - Dades personals: nom, email...
