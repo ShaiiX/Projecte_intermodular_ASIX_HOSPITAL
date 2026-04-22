@@ -51,6 +51,15 @@ Per protegir les dades s'utilitza una extensió de PostgreSQL "Anonymizer". Les 
 
 DNI: *****12A
 
-## Registre de logs
+## Drets dels usuaris RGPD/ARCO
+
+- Accés: saber quines dades es guarden
+- Rectificació: modificar les dades incorrectes
+- Cancel·lació: eliminar les dades
+- Oposició: negar-se al tractament
+
+També tenen dret a l'oblit i a la limitació del tractament.
+
+## Compliment de la normativa
 
 
