@@ -233,6 +233,8 @@ Un cop això es realitzaran els logs de forma completa per a poder utilitzarlos 
 
 Primerament s'ha d'activar en el postgresql.conf la seguent configuracio:
 Serveix per a carregar una extensio de postgresql al iniciar el servidor que el que fa es normalitzar una query que es pot arribar a repetir sempre, com casi tots els canvis es faran desde l'aplicatiu sera mes simple de tenir un control sombre les dades desde l'aplicatiu tenint-ho de forma normalitzada aprofitant espai.
+
+De igual forma que el anon:
 ```
 shared_preload_libraries = 'pg_stat_statements'
 ```
