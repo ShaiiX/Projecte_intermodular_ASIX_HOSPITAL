@@ -143,6 +143,8 @@ Aquesta extensio incorpora funcions per a quan es faci qualsevol select es mostr
 - expedient.observacions
 - visita.diagnostic
 
+El data masking s’aplica als rols que no necessiten accedir a dades sensibles completes (mínim privilegi). Per evitar l’exposició innecessària d’informació personal i mèdica.
+
 ## Normativa AGPD
 
 [Estructura completa](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/Esquema-seguretat/agpd)
