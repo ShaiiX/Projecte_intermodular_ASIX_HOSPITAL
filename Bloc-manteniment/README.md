@@ -43,3 +43,11 @@ Es poden consultar les visites que hi ha planificades per a un dia determinat. M
 
 Per assegurar que les dades siguin correctes, hem implementat triggers que validen les dates dels ingressos 
 
+També una funció que controla l'inserció d'operacions, per comprovar que el quiròfan i el personal estiguin disponibls.
+
+## Funcionalitats opcionals (implementades)
+
+### Consulta d'habitacions
+
+
+
