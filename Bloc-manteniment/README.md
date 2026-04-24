@@ -25,3 +25,21 @@ Això permet poder organitzar el personal i millorar la organització.
 
 ### Gestió d'operacions
 
+Per a un dia en concret permet consultar totes les operacions que hi ha previstes, que inclou:
+
+- El quiròfan assignat
+- El pacient a operar
+- L'hora 
+- Metge responsable que farà les operacions
+- El personal d'infermeria que intervidrà
+
+Evita que hi puguin haver problemes de planificació.
+
+### Gestió de visites
+
+Es poden consultar les visites que hi ha planificades per a un dia determinat. Mostra l'hora de la visita, el metge assignat i el pacient.
+
+### Validació PGPLSQL
+
+Per assegurar que les dades siguin correctes, hem implementat triggers que validen les dates dels ingressos 
+
