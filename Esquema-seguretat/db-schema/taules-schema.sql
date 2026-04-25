@@ -154,7 +154,7 @@ CREATE TABLE pacient.VISITA(
     id_visita SERIAL PRIMARY KEY,
     id_pacient INT REFERENCES pacient.PACIENT(id_pacient),
     id_metge INT REFERENCES dades_per.METGE(id_personal),
-    data DATE,
+    data TIMESTAMP,
     diagnostic TEXT
 );
 
@@ -172,8 +172,9 @@ CREATE TABLE pacient.OPERACIO(
     id_pacient INT REFERENCES pacient.PACIENT(id_pacient),
     tipus_operacio VARCHAR(100),
     estat VARCHAR(50),
-    data DATE,
+    data TIMESTAMP,
     descripcio TEXT,
+    id_metge INT REFERENCES dades_per.METGE(id_personal),
     id_planta INT,
     num_quirofan INT,
     FOREIGN KEY (id_planta, num_quirofan) 
