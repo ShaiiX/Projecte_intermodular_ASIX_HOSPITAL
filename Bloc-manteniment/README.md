@@ -49,5 +49,20 @@ També una funció que controla l'inserció d'operacions, per comprovar que el q
 
 ### Consulta d'habitacions
 
+Per saber la informació d'una habitació concreta, mostrant les reserves previstes, data d'ingrés, sortida i pacient assignat.
 
+### Historial del pacient
 
+Es pot obtenir l'historial complet d'un pacient, com les seves visites realitzades, diagnòstics, medicaments receptats, ingressos i operacions.
+
+### Programació metges
+
+El metge podria veure les visites i operacons programades, com la disponibiliat. Així poder tenir una millor gestió del temps dels metges.
+
+## Top
+
+### Aparells quiròfan
+
+Permet saber quins aparells mèdics estan assignats a cada quiròfan i en quina quantitat.
+
+Per exemple es pot consultar que un quiròfan té assignat dos respiradors i dos equips d’oxigen.
