@@ -63,7 +63,7 @@ def alta_pacient(conn, dades):
     with conn.cursor() as cur:
         try:
             query = """
-            INSERT INTO pacient (nom, cognoms, telefon, email, dni, data_naixament, tarjeta_sanitaria) 
+            INSERT INTO pacient.PACIENT (nom, cognoms, telefon, email, dni, data_naixament, tarjeta_sanitaria) 
             VALUES (%s, %s, %s, %s, %s, %s, %s)"""
             cur.execute(query, dades)
             conn.commit()
