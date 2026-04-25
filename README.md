@@ -12,7 +12,7 @@ Repositori pel projecte ASIX 1
 4. [Esquema de seguretat](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/Esquema-seguretat)
 
 ## Planificació del projecte en Jira
-https://sapalomera-team-l2aecu2e.atlassian.net/jira/software/projects/KAN/list?jql=project+%3D+KAN+ORDER+BY+due+ASC%2C+created+ASC&atlOrigin=eyJpIjoiOTA5OTY2YTc3NWI3NDNhOWFkNmYyNmRlNWU5MjAyNGQiLCJwIjoiaiJ9
+[Planificació Jira](https://sapalomera-team-l2aecu2e.atlassian.net/jira/software/projects/KAN/list?jql=project+%3D+KAN+ORDER+BY+due+ASC%2C+created+ASC&atlOrigin=eyJpIjoiOTA5OTY2YTc3NWI3NDNhOWFkNmYyNmRlNWU5MjAyNGQiLCJwIjoiaiJ9)
 
 ## Diari de Sessions
 
