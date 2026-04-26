@@ -77,7 +77,11 @@ CREATE TABLE estructura.APARELL_MEDIC(
     id_aparell SERIAL PRIMARY KEY,
     num_serie VARCHAR(100) UNIQUE,
     data_manteniment DATE,
-    id_tipus INT REFERENCES estructura.TIPUS(id_tipus)
+    id_tipus INT REFERENCES estructura.TIPUS(id_tipus),
+    id_planta INT,
+    num_quirofan INT,
+    FOREIGN KEY (id_planta, num_quirofan) 
+        REFERENCES estructura.QUIROFAN(id_planta, num_quirofan)
 );
 
 
