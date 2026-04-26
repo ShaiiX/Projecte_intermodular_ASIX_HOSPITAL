@@ -99,7 +99,11 @@ def menu_operacions():
     f.geometry("500x400")
 
     # selecionar data
-    tk.Label(f, text="Selecciona data:").pack(pady=5)
+    ctk.CTkLabel(
+        f,
+        text="Selecciona data:",
+        font=ctk.CTkFont(size=16, weight="bold")
+    ).pack(pady=8)
 
     cal = DateEntry(f, date_pattern="yyyy-mm-dd")
     cal.pack(pady=10)
@@ -130,7 +134,11 @@ def menu_visites():
     f.title("Visites")
     f.geometry("500x400")
 
-    tk.Label(f, text="Selecciona data:").pack(pady=5)   # seleccionar data
+    ctk.CTkLabel(
+        f,
+        text="Selecciona data:",
+        font=ctk.CTkFont(size=16, weight="bold")
+    ).pack(pady=8)   # seleccionar data
 
     cal = DateEntry(f, date_pattern="yyyy-mm-dd")
     cal.pack(pady=10)
@@ -158,12 +166,3 @@ def menu_habitacio():
     entry.pack(pady=10)
     box = ctk.CTkTextbox(f)
     box.pack(fill="both", expand=True)
-
-    def consultar():
-        conn = connectar()
-        box.delete("1.0", "end")
-        dades = obtenir_reserves_habitacio(conn, entry.get())
-
-        for d in dades:
-            box.insert("end", f"{d}\n")
-    ctk.CTkButton(f, text="Consultar", command=consultar).pack()
