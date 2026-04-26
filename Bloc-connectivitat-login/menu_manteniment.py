@@ -3,19 +3,8 @@ from tkinter import messagebox
 from db import connectar
 import alta
 import consultes
-
-# funcio
-
-def obtenir_reserves_habitacio(conn, id_habitacio):
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT i.data_ingres, i.data_sortida_prevista, p.nom
-            FROM pacient.ingres i
-            JOIN pacient.pacient p ON i.id_pacient = p.id_pacient
-            WHERE i.id_habitacio = %s
-            ORDER BY i.data_ingres;
-        """, (id_habitacio,))
-        return cur.fetchall()
+from tkcalendar import DateEntry
+import tkinter as tk
 
 # menu principal
 def obrir_manteniment():
@@ -109,8 +98,11 @@ def menu_operacions():
     f.title("Operacions")
     f.geometry("500x400")
 
-    entry = ctk.CTkEntry(f, placeholder_text="YYYY-MM-DD")
-    entry.pack(pady=10)
+    # selecionar data
+    tk.Label(f, text="Selecciona data:").pack(pady=5)
+
+    cal = DateEntry(f, date_pattern="yyyy-mm-dd")
+    cal.pack(pady=10)
     box = ctk.CTkTextbox(f)
     box.pack(fill="both", expand=True)
 
@@ -118,12 +110,19 @@ def menu_operacions():
         conn = connectar()
         box.delete("1.0", "end")
 
+        data = cal.get_date()  # obtenir data seleccionada
+
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM pacient.vista_operacions_detallades WHERE dia = %s", (entry.get(),))
+            cur.execute("""
+                SELECT * 
+                FROM pacient.vista_operacions_detallades 
+                WHERE dia = %s
+            """, (data,))
+            
             for r in cur.fetchall():
                 box.insert("end", str(r) + "\n")
 
-    ctk.CTkButton(f, text="Consultar", command=consultar).pack()
+    ctk.CTkButton(f, text="Consultar", command=consultar).pack(pady=10)
 
 # visites
 def menu_visites():
@@ -131,19 +130,23 @@ def menu_visites():
     f.title("Visites")
     f.geometry("500x400")
 
-    entry = ctk.CTkEntry(f, placeholder_text="YYYY-MM-DD")
-    entry.pack(pady=10)
+    tk.Label(f, text="Selecciona data:").pack(pady=5)   # seleccionar data
+
+    cal = DateEntry(f, date_pattern="yyyy-mm-dd")
+    cal.pack(pady=10)
     box = ctk.CTkTextbox(f)
     box.pack(fill="both", expand=True)
 
     def consultar():
         conn = connectar()
         box.delete("1.0", "end")
-        dades = consultes.carregar_visites_del_dia(conn, entry.get())
+        data = cal.get_date()
+        dades = consultes.carregar_visites_del_dia(conn, data)
 
         for v in dades:
             box.insert("end", f"{v}\n")
-    ctk.CTkButton(f, text="Consultar", command=consultar).pack()
+
+    ctk.CTkButton(f, text="Consultar", command=consultar).pack(pady=10)
 
 # habitacions
 def menu_habitacio():

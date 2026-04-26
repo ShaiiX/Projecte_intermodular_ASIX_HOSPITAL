@@ -7,7 +7,7 @@ import menu_manteniment
 def obrir_menu(rol):    # funció per obrir el menú segons el rol de l'usuari
     f = tk.Toplevel()   # nova finestra
     f.title("Menú Hospital")    # títol de la finestra
-    f.geometry("400x350")   # mida
+    f.geometry("600x520")   # mida
     f.configure(bg="#f5f7fa")   # color de fons
 
     def tornar_login():
@@ -16,7 +16,7 @@ def obrir_menu(rol):    # funció per obrir el menú segons el rol de l'usuari
 
     # frame principal per centrar contingut
     frame = tk.Frame(f, bg="#ffffff", bd=0)
-    frame.place(relx=0.5, rely=0.5, anchor="center", width=320, height=260)
+    frame.place(relx=0.5, rely=0.5, anchor="center", width=450, height=400)
 
     # estil general
     font_titol = ("Segoe UI", 18, "bold")
@@ -39,6 +39,21 @@ def obrir_menu(rol):    # funció per obrir el menú segons el rol de l'usuari
             command=gestio_usuaris  # obre la finestra de gestió d'usuaris
         ).pack(pady=10)
 
+        tk.Button(
+            frame,
+            text="Bloc de Manteniment",
+            font=font_text,
+            bg="#2563eb",
+            fg="white",
+            activebackground="#1e40af",
+            relief="flat",
+            bd=0,
+            width=22,
+            height=2,
+            cursor="hand2",
+            command=menu_manteniment.obrir_manteniment
+        ).pack(pady=15)
+
         tk.Button(  # botó de consultes
             frame,
             text="Consultes",
@@ -51,17 +66,6 @@ def obrir_menu(rol):    # funció per obrir el menú segons el rol de l'usuari
             width=22,
             height=2,
             cursor="hand2"
-        ).pack(pady=10)
-
-        tk.Button(
-            frame,
-            text="Bloc manteniment",
-            font=font_text,
-            bg="#2563eb",
-            fg="white",
-            width=22,
-            height=2,
-            command=menu_manteniment.obrir_manteniment
         ).pack(pady=10)
 
     elif rol == "usuari":   # menú per Usuari normal

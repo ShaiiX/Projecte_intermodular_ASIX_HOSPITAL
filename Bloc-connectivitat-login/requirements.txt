@@ -3,6 +3,7 @@ psycopg2 per a la connexió a la base de dades, bcrypt per a l'encriptació de c
 
 Instal·lació amb la seguent comanda:
 pip install psycopg2 bcrypt customtkinter
+pip install tkcalendar
 
 Versions:
 psycopg2==2.9.11
