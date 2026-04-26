@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 import funcions # importar fiitxer de funcions
 
+import menu_manteniment
+
 def obrir_menu(rol):    # funció per obrir el menú segons el rol de l'usuari
     f = tk.Toplevel()   # nova finestra
     f.title("Menú Hospital")    # títol de la finestra
@@ -49,6 +51,17 @@ def obrir_menu(rol):    # funció per obrir el menú segons el rol de l'usuari
             width=22,
             height=2,
             cursor="hand2"
+        ).pack(pady=10)
+
+        tk.Button(
+            frame,
+            text="Bloc manteniment",
+            font=font_text,
+            bg="#2563eb",
+            fg="white",
+            width=22,
+            height=2,
+            command=menu_manteniment.obrir_manteniment
         ).pack(pady=10)
 
     elif rol == "usuari":   # menú per Usuari normal

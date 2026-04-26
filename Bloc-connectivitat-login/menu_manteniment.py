@@ -1,0 +1,166 @@
+import customtkinter as ctk
+from tkinter import messagebox
+from db import connectar
+import alta
+import consultes
+
+# funcio
+
+def obtenir_reserves_habitacio(conn, id_habitacio):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT i.data_ingres, i.data_sortida_prevista, p.nom
+            FROM pacient.ingres i
+            JOIN pacient.pacient p ON i.id_pacient = p.id_pacient
+            WHERE i.id_habitacio = %s
+            ORDER BY i.data_ingres;
+        """, (id_habitacio,))
+        return cur.fetchall()
+
+# menu principal
+def obrir_manteniment():
+    app = ctk.CTk()
+    app.title("Bloc de Manteniment")
+    app.geometry("500x500")
+
+    ctk.CTkLabel(app, text="Bloc de Manteniment", 
+                 font=ctk.CTkFont(size=28, weight="bold")).pack(pady=30)
+    # botons a submenús
+    ctk.CTkButton(app, text="Alta Personal", width=250,
+                  command=menu_alta_personal).pack(pady=10)
+    ctk.CTkButton(app, text="Alta Pacient", width=250,
+                  command=menu_alta_pacient).pack(pady=10)
+    ctk.CTkButton(app, text="Dependència Infermeria", width=250,
+                  command=menu_dependencia).pack(pady=10)
+    ctk.CTkButton(app, text="Operacions per dia", width=250,
+                  command=menu_operacions).pack(pady=10)
+    ctk.CTkButton(app, text="Visites per dia", width=250,
+                  command=menu_visites).pack(pady=10)
+    ctk.CTkButton(app, text="Reserves Habitació", width=250,
+                  command=menu_habitacio).pack(pady=10)
+
+    app.mainloop()
+
+# submenus
+
+# alta personal
+def menu_alta_personal():
+    f = ctk.CTkToplevel()
+    f.title("Alta Personal")
+    f.geometry("400x500")
+
+    entries = []
+    labels = ["Nom", "Cognom1", "Cognom2", "DNI", "Data Naixement", "Telèfon", "Email", "Direcció"]
+
+    for l in labels:
+        ctk.CTkLabel(f, text=l).pack()
+        e = ctk.CTkEntry(f)
+        e.pack(pady=2)
+        entries.append(e)
+    tipus = ctk.CTkOptionMenu(f, values=["metge", "infermer_metge", "infermer_planta", "vari"])
+    tipus.pack(pady=10)
+
+    def guardar():
+        conn = connectar()
+        dades = [e.get() for e in entries]
+        alta.alta_personal(conn, tipus.get(), dades, (), None)
+        messagebox.showinfo("OK", "Personal creat")
+    ctk.CTkButton(f, text="Guardar", command=guardar).pack(pady=20)
+
+# alta pacient
+def menu_alta_pacient():
+    f = ctk.CTkToplevel()
+    f.title("Alta Pacient")
+    f.geometry("400x500")
+
+    entries = []
+    labels = ["Nom", "Cognoms", "Telèfon", "Email", "DNI", "Data Naixement", "Targeta Sanitària"]
+
+    for l in labels:
+        ctk.CTkLabel(f, text=l).pack()
+        e = ctk.CTkEntry(f)
+        e.pack(pady=2)
+        entries.append(e)
+
+    def guardar():
+        conn = connectar()
+        dades = [e.get() for e in entries]
+        alta.alta_pacient(conn, dades)
+        messagebox.showinfo("OK", "Pacient creat")
+    ctk.CTkButton(f, text="Guardar", command=guardar).pack(pady=20)
+
+# dependencia infermeria
+def menu_dependencia():
+    f = ctk.CTkToplevel()
+    f.title("Dependència Infermeria")
+    f.geometry("300x200")
+
+    entry = ctk.CTkEntry(f, placeholder_text="ID Infermer")
+    entry.pack(pady=20)
+
+    def consultar():
+        conn = connectar()
+        consultes.check_dependencia_infermeria(conn, entry.get())
+    ctk.CTkButton(f, text="Consultar", command=consultar).pack()
+
+# operacions
+def menu_operacions():
+    f = ctk.CTkToplevel()
+    f.title("Operacions")
+    f.geometry("500x400")
+
+    entry = ctk.CTkEntry(f, placeholder_text="YYYY-MM-DD")
+    entry.pack(pady=10)
+    box = ctk.CTkTextbox(f)
+    box.pack(fill="both", expand=True)
+
+    def consultar():
+        conn = connectar()
+        box.delete("1.0", "end")
+
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM pacient.vista_operacions_detallades WHERE dia = %s", (entry.get(),))
+            for r in cur.fetchall():
+                box.insert("end", str(r) + "\n")
+
+    ctk.CTkButton(f, text="Consultar", command=consultar).pack()
+
+# visites
+def menu_visites():
+    f = ctk.CTkToplevel()
+    f.title("Visites")
+    f.geometry("500x400")
+
+    entry = ctk.CTkEntry(f, placeholder_text="YYYY-MM-DD")
+    entry.pack(pady=10)
+    box = ctk.CTkTextbox(f)
+    box.pack(fill="both", expand=True)
+
+    def consultar():
+        conn = connectar()
+        box.delete("1.0", "end")
+        dades = consultes.carregar_visites_del_dia(conn, entry.get())
+
+        for v in dades:
+            box.insert("end", f"{v}\n")
+    ctk.CTkButton(f, text="Consultar", command=consultar).pack()
+
+# habitacions
+def menu_habitacio():
+    f = ctk.CTkToplevel()
+    f.title("Reserves Habitació")
+    f.geometry("500x400")
+
+    entry = ctk.CTkEntry(f, placeholder_text="ID Habitació")
+    entry.pack(pady=10)
+    box = ctk.CTkTextbox(f)
+    box.pack(fill="both", expand=True)
+
+    def consultar():
+        conn = connectar()
+        box.delete("1.0", "end")
+        dades = obtenir_reserves_habitacio(conn, entry.get())
+
+        for d in dades:
+            box.insert("end", f"{d}\n")
+    ctk.CTkButton(f, text="Consultar", command=consultar).pack()
