@@ -30,26 +30,17 @@ def obrir_manteniment():
     app.mainloop()
 
 
-# =========================
-# ALTA PERSONAL (FIXED)
-# =========================
 def menu_alta_personal():
     f = ctk.CTkToplevel()
     f.title("Alta Personal")
     f.geometry("900x500")
 
-    # =========================
-    # CONTENEDOR PRINCIPAL
-    # =========================
     left = ctk.CTkFrame(f)
     left.grid(row=0, column=0, padx=20, pady=20, sticky="n")
 
     right = ctk.CTkFrame(f)
     right.grid(row=0, column=1, padx=20, pady=20, sticky="n")
 
-    # =========================
-    # DADES PERSONALS (IZQUIERDA)
-    # =========================
     ctk.CTkLabel(left, text="Dades Personals", font=("Arial", 16, "bold")).pack(pady=10)
 
     labels = [
@@ -65,9 +56,6 @@ def menu_alta_personal():
         e.pack(pady=2)
         entries_comuns.append(e)
 
-    # =========================
-    # TIPUS PERSONAL (DERECHA)
-    # =========================
     ctk.CTkLabel(right, text="Tipus de Personal", font=("Arial", 16, "bold")).pack(pady=10)
 
     extra_frame = ctk.CTkFrame(right)
@@ -85,8 +73,12 @@ def menu_alta_personal():
 
         if tipus == "Metge":
             camps = ["Especialitat", "Currículum", "Num Col·legiat"]
-        else:
+        elif tipus == "Infermer Planta":
             camps = ["Torn (M/T/N)", "Anys Experiència", "ID Planta"]
+        elif tipus == "Infermer Metge":
+            camps = ["Torn (M/T/N)", "Anys Experiència", "ID Metge"]
+        else:
+            camps = ["Tipus Feina", "Horari"]
 
         for c in camps:
             ctk.CTkLabel(extra_frame, text=c).pack()
@@ -97,7 +89,7 @@ def menu_alta_personal():
     # 🔥 SELECTOR
     selector = ctk.CTkOptionMenu(
         right,
-        values=["Metge", "Infermer Planta"],
+        values=["Metge", "Infermer Planta","Infermer Metge", "Vari/Administratiu"],
         command=canvi_tipus
     )
     selector.set("Metge")
@@ -105,9 +97,7 @@ def menu_alta_personal():
 
     canvi_tipus("Metge")
 
-    # =========================
-    # GUARDAR
-    # =========================
+
     def guardar():
         conn = connectar()
 
