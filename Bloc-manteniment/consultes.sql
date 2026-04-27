@@ -1,7 +1,3 @@
--- ==========================================================
--- 1. VISTES DE CONSULTA (Per a la interfície Python)
--- ==========================================================
-
 -- Vista per a Operacions
 CREATE OR REPLACE VIEW pacient.vista_operacions_detallades AS
 SELECT 
