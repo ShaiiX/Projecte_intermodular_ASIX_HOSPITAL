@@ -46,6 +46,9 @@ Slave:
 
 El node rep totes les operacions com Insert, update i delete, després aquestes operacions es registren al **WAL** (que és Write-Ahead Log). El slave replica aquests canvis automàticament i en cas de fallada del Master, el slave passa a ser el nou master.
 
+*WAL: qualsevol transacció que estigui modificant les dades ho va guardant en fitxers de log, si hi han un problema, indiquem la posició inicial per recuperar (LSN), és el punt el qual podrem recuperar, li diem que recupera a partir del LSN (i número d’aquest) (configurar al postgres.conf). Si s’omple es van fent còpies dels fitxers de logs, així no es perd res.*
+
+
 Així garantir la alta disponibilitat, una recuperació ràpida de les dades i reduïr la seva pèrdua.
 
 ## Administració
@@ -61,12 +64,18 @@ max_wal_senders = 10
 
 Es faran diferents tipus de còpies:
 
-- Backup complet:
-    - es realitza una vegada per setmana (els caps de setmana per la nit)
+- Backup complet: es realitza una vegada per setmana (els caps de setmana per la nit)
+- Backup incremental: es realitza diàriament.
 
-- Backup incremental:
-    - 
+RPO: temps màxim de dades que es poden perdre
+
+RTO: temps màxim per restaurar el sistema.
+
+Interessa que sigui els dos triguin el menor temps possible, especialment per a aplicacions on cada minut d'innactivitat pot provocar pèrdues en cas d'incidència.
+
+EXPLICAR BACKUP EN FRED
 
 # Restauració
+
 
 
