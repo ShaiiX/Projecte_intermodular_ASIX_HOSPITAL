@@ -69,8 +69,8 @@ max_wal_senders = 10
 
 Es faran diferents tipus de còpies:
 
-- Backup complet: es realitza una vegada per setmana (els caps de setmana per la nit)
-- Backup incremental: es realitza diàriament.
+- Backup complet (pg_dump): es realitza una vegada per setmana (els caps de setmana per la nit)
+- Backup incremental: es realitza diàriament, basat en arxius WAL (archiving)
 
 RPO: temps màxim de dades que es poden perdre
 
@@ -78,7 +78,33 @@ RTO: temps màxim per restaurar el sistema.
 
 Interessa que sigui els dos triguin el menor temps possible, especialment per a aplicacions on cada minut d'innactivitat pot provocar pèrdues en cas d'incidència.
 
-EXPLICAR BACKUP EN FRED
+Els arxius WAL permeten fer recuperació fins a un punt concret (PITR: point in time recovery), aplicant els canvis després d’un backup complet.
+
+## Backup en calent
+
+El backup en calent permet realitzar còpies de seguretat sense aturar el servei de postgres, és a dir amb la BD en funcionament i accessible pels usuaris. No es pot permetre el downtime.
+
+### Funcionament
+
+- Backup complet inicial que és la base del backup
+- Arxius WAL
+
+Primer es realitza una còpia completa de la bd i a partir d'aquesta totes les modificacions que es fan a la bd es registren als fitxers Wal. Aquests fitxers es van guardant i permeten reconstruir la bd (el seu estat) en qualsevol moment després.
+
+### Configuració necessària
+
+Per habilitar els backups en calent cal confgurar el fitxer en ``postgresql.conf``:
+
+```
+wal_level = replica
+archive_mode = on
+archive_command = 'cp %p /backup/wal/%f'
+```
+
+Realització del backup complet amb: 
+```
+pg_basebackup -D /backup/base -Fp -Xs -P
+```
 
 # Restauració
 
@@ -97,7 +123,8 @@ Especificacions de l'estructura que té el sistema del servidor.
 | /var/lib/postgresql | Dades de la BD | Separació crítica de dades |
 | /var/log/postgresql | Logs de Postgres | Monitorització i diagnòstic |
 | /backup | Còpies de seguretat locals | Restauració ràpida |
-| /wal | Fitxers WAL | Millora rendiment i seguretat |
+| /var/lib/postgresql/15/main | Dades + WAL (pg_wal) | Estructura interna de PostgreSQL |
+| /etc/postgresql | Configuració | Arxius de configuració (postgresql.conf, pg_hba.conf) |
 
 Separar `/var/lib/postgresql` evita que si hi ha problemes del sistema puguin afectar la base de dades. Els logs es separen per evitar que omplin el disc principal i provoquin errors. Els fitxers WAL en un disc separat milloren el rendiment i permeten una recuperació més eficient en cas de fallada.
 
@@ -121,6 +148,6 @@ Gestió de logs a /var/log/postgresql/ serán errors del servidor, connexions.
 ### Fora del servidor
 - Backups (NAS)
 - Node secundari (replicació)
-- Logs
+- Logs (s'envien cap a fora del servidor)
 
 
