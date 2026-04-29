@@ -20,7 +20,7 @@ Principalment s'ha de parlar de com s'extructura el servidor, més a dir el hard
 
 | Component | Opció proposada | Explicació |
 | :--- | :--- | :--- |
-| CPU | Intel Xeon Silver 4310 (12 cores) | Permet gestionar múltiples consultes a la vegada i càrrega massiva d’usuaris sense perdre rendiment (té gran capacitat de nuclis i escalabilitat) |
+| CPU | Intel Xeon | Permet gestionar múltiples consultes a la vegada i càrrega massiva d’usuaris sense perdre rendiment (té gran capacitat de nuclis i escalabilitat) |
 | RAM | 32 GB | Postgres utilitza molta memòria per cache (shared_buffers), millora molt el rendiment de consultes |
 | Emmagatzematge | SSD NVMe 1TB (RAID 1) | Alta velocitat de lectura i escriptura + redundància en cas de fallada de disc |
 | Xarxa | 1 Gbps mínim / 10 Gbps recomanat | Necessari per la replicació amb el node secundari i accés d’usuaris |
@@ -82,5 +82,30 @@ EXPLICAR BACKUP EN FRED
 
 # Restauració
 
+EXPLICAR
 
+# Estructura del sistema
+
+Especificacions de l'estructura que té el sistema del servidor.
+
+## Particions del disc
+
+| Punt de muntatge | Contingut | Motiu |
+| :--- | :--- | :--- |
+| / | SO Linux | Separar sistema de dades |
+| /var | Logs del sistema | Evitar que omplin tot el disc |
+| /var/lib/postgresql | Dades de la BD | Separació crítica de dades |
+| /var/log/postgresql | Logs de Postgres | Monitorització i diagnòstic |
+| /backup | Còpies de seguretat locals | Restauració ràpida |
+| /wal | Fitxers WAL | Millora rendiment i seguretat |
+
+Separar `/var/lib/postgresql` evita que si hi ha problemes del sistema puguin afectar la BD. Els logs es separen per evitar que omplin el disc principal. Els WAL en disc separat milloren el rendiment i la recuperació.
+
+## Estructura de fitxers de Postgres
+
+Directori principal /var/lib/postgresql/15/main : conté els fitxers de dades, la configuració interna.
+
+WAL: /wal permet guadar totes les transaccions i permet la recuperació en cas de fallada.
+
+Gestió de logs a /var/log/postgresql/ serán errors del servidor, connexions.
 
