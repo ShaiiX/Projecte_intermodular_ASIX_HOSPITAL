@@ -20,7 +20,7 @@ Principalment s'ha de parlar de com s'extructura el servidor, més a dir el hard
 
 | Component | Opció proposada | Explicació |
 | :--- | :--- | :--- |
-| CPU | Intel Xeon (8 cores) | Permet gestionar múltiples consultes a la vegada i càrrega massiva d’usuaris sense perdre rendiment (té gran capacitat de nuclis i escalabilitat) |
+| CPU | Intel Xeon Silver 4310 (12 cores) | Permet gestionar múltiples consultes a la vegada i càrrega massiva d’usuaris sense perdre rendiment (té gran capacitat de nuclis i escalabilitat) |
 | RAM | 32 GB | Postgres utilitza molta memòria per cache (shared_buffers), millora molt el rendiment de consultes |
 | Emmagatzematge | SSD NVMe 1TB (RAID 1) | Alta velocitat de lectura i escriptura + redundància en cas de fallada de disc |
 | Xarxa | 1 Gbps mínim / 10 Gbps recomanat | Necessari per la replicació amb el node secundari i accés d’usuaris |
