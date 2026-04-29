@@ -18,12 +18,17 @@ Aquesta configuració permet evitar punts de fallada, garantir disponibilitat co
 
 Principalment s'ha de parlar de com s'extructura el servidor, més a dir el hardware, es necesitarà un servidor potent per a fer les consultes necesaries de forma rapida, aquesta seria la proposta:
 
-| Component | Opció | Explicació |
+| Component | Opció proposada | Explicació |
 | :--- | :--- | :--- |
-| CPU | 
-| RAM |
-| Almacenament |
-| Xarxa |
+| CPU | Intel Xeon (8 cores) | Permet gestionar múltiples consultes a la vegada i càrrega massiva d’usuaris sense perdre rendiment (té gran capacitat de nuclis i escalabilitat) |
+| RAM | 32 GB | Postgres utilitza molta memòria per cache (shared_buffers), millora molt el rendiment de consultes |
+| Emmagatzematge | SSD NVMe 1TB (RAID 1) | Alta velocitat de lectura i escriptura + redundància en cas de fallada de disc |
+| Xarxa | 1 Gbps mínim / 10 Gbps recomanat | Necessari per la replicació amb el node secundari i accés d’usuaris |
+| Backup | NAS HP extern | Emmagatzematge segur per a còpies de seguretat separades del servidor |
+
+El servidor ha de ser bastant potent perquè és el que gestiona totes les escriptures de la bd, genera els logs del WAL per a la replicació i dona servei a tots els clients.
+
+Fer servir NVMe amb RAID 1 assegura l'alta velocitat i la tolerància a fallades, és a dir que si falla un disc, el sistema continua funcionant.
 
 # Rèplica
 
@@ -53,7 +58,7 @@ Així garantir la alta disponibilitat, una recuperació ràpida de les dades i r
 
 ## Administració
 
-Configuració del `pg_hba.conf` per permetre connexions del node secundari:
+Configuració del `postgresql.conf` per permetre connexions del node secundari:
 ```
 wal_level = replica
 archive_mode = on
