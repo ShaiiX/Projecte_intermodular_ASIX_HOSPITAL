@@ -108,7 +108,25 @@ pg_basebackup -D /backup/base -Fp -Xs -P
 
 # Restauració
 
-EXPLICAR
+La restauració no es realitza directament sobre el node de producció, ja que sinó s'hauria de aturar el servei.
+
+En cas de fallada el node principal, el node seundari passarà a ser el master per poder garantir la continuació del servei. La restauració es fa sobre el node secudari, aplicant el backup complet i els arxius WAL. Un cop es validen les dades, aquest node pot substituir l'anterior.
+
+## PITR
+
+És per recuperar la bd fins a un punt en concrret en el temps.
+
+1. Restaurar el backup base
+2. Aplicar el Wal fins al punt escollit
+
+Així poder recuperar els errors humans (com Delete, update incorrectes).
+
+### Restauració completa
+
+Només s’utilitza en casos crítics on no hi ha cap node disponible i això implicaria:
+- Aturar PostgreSQL
+- Restaurar el backup
+- Aplicar WAL
 
 # Estructura del sistema
 
