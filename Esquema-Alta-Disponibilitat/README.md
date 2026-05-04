@@ -144,6 +144,8 @@ Especificacions de l'estructura que té el sistema del servidor.
 | /backup | Còpies de seguretat locals | Restauració ràpida |
 | /var/lib/postgresql/15/main | Dades + WAL (pg_wal) | Estructura interna de PostgreSQL |
 | /etc/postgresql | Configuració | Arxius de configuració (postgresql.conf, pg_hba.conf) |
+| /tmp | Fitxers temporals | Aillar els fitxers temporals per seguretat |
+| /home | Usuari | Separar les dades dels usuaris per seguretat |
 
 Separar `/var/lib/postgresql` evita que si hi ha problemes del sistema puguin afectar la base de dades. Els logs es separen per evitar que omplin el disc principal i provoquin errors. Els fitxers WAL en un disc separat milloren el rendiment i permeten una recuperació més eficient en cas de fallada.
 
