@@ -116,8 +116,9 @@ En cas de fallada el node principal, el node seundari passarà a ser el master p
 
 És per recuperar la bd fins a un punt en concrret en el temps.
 
-1. Restaurar el backup base
-2. Aplicar el Wal fins al punt escollit
+1. Restaurar el backup base complet
+2. Backup incremental
+3. Aplicar el WAL fins al punt escollit
 
 Així poder recuperar els errors humans (com Delete, update incorrectes).
 
