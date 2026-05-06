@@ -199,4 +199,4 @@ Gestió de logs a /var/log/postgresql/ serán errors del servidor, connexions.
 
 ---
 
-[PDF Manual d'instal·lació i configuració]()
+[PDF Manual d'instal·lació i configuració](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/blob/main/Esquema-Alta-Disponibilitat/Manual-instalacio-replicacio.pdf)
