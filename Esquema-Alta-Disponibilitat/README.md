@@ -34,6 +34,8 @@ Fer servir NVMe amb RAID 1 assegura l'alta velocitat i la tolerància a fallades
 
 Per la seva simplicitat i el proporcionat s'utilitzara el sistema de actiu-passiu, ja que seria per a un pressupost baix, que és just el que busquem. 
 
+![Diagrama](./diagrama-de-replicacio.png)
+
 ## Tipus de replicació escollida:
 
 **Model Actiu-Passiu (Master-Slave)**
