@@ -111,19 +111,41 @@ sudo -u postgres pg_basebackup -D /backup/base/<nombackup> -Fp -Xs -T /var/lib/p
 
 # Restauració
 
-La restauració no es realitza directament sobre el node de producció, ja que sinó s'hauria de aturar el servei.
+La restauracio no es realitza directament sobre el node de producció, ja que això implicaria aturar el servei i provocar downtime. En un entorn crític com un hospital, la base de dades ha d’estar disponible contínuament.
+Per aquest motiu s’utilitza una arquitectura actiu-passiu amb rèplica entre dos nodes.
 
-En cas de fallada el node principal, el node seundari passarà a ser el master per poder garantir la continuació del servei. La restauració es fa sobre el node secudari, aplicant el backup complet i els arxius WAL. Un cop es validen les dades, aquest node pot substituir l'anterior.
+En cas de fallada del node principal (master), el node secundari (slave) passarà a ser el nou node principal per garantir la continuació del servei. La restauració es realitza sobre el node afectat o sobre un nou servidor, evitant interrompre el funcionament del sistema.
+
+La recuperació de dades es basa en:
+- Backup complet
+- Backup incremental
+- Arxius WAL (Write-Ahead Log)
+
+Aquest sistema permet reconstruir la base de dades fins al punt més recent possible.
 
 ## PITR
 
-És per recuperar la bd fins a un punt en concrret en el temps.
+El PITR permet recuperar la bd fins a un punt concret en el temps.
 
-1. Restaurar el backup base complet
-2. Backup incremental
-3. Aplicar el WAL fins al punt escollit
+És útil davant:
+- errors humans
+- eliminacions accidentals
+- actualitzacions incorrectes
+- corrupció parcial de dades
 
-Així poder recuperar els errors humans (com Delete, update incorrectes).
+El procés de recuperació segueix aquest ordre:
+
+1. Restaurar l’ultim backup complet
+2. Aplicar l’últim backup incremental
+3. Aplicar els arxius WAL disponibles
+
+Els arxius WAL contenen totes les transaccions realitzades després del backup incremental:
+- INSERT
+- UPDATE
+- DELETE
+- també modificacions internes
+
+Postgresql aplica automàticament els WAL durant el procés de recovery per reconstruir l’estat més actual de la bd.
 
 ### Restauració completa
 
@@ -175,4 +197,6 @@ Gestió de logs a /var/log/postgresql/ serán errors del servidor, connexions.
 - Node secundari (replicació)
 - Logs (s'envien cap a fora del servidor)
 
+---
 
+[PDF Manual d'instal·lació i configuració]()
