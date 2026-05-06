@@ -62,7 +62,7 @@ Configuració del `postgresql.conf` per permetre connexions del node secundari:
 ```
 wal_level = replica
 archive_mode = on
-max_wal_senders = 10
+archive_command = 'test ! -f /var/lib/postgresql/wal_real/%f && cp %p /var/lib/postgresql/wal_real/%f'
 ```
 
 # Backups
@@ -78,7 +78,7 @@ RTO: temps màxim per restaurar el sistema.
 
 Interessa que sigui els dos triguin el menor temps possible, especialment per a aplicacions on cada minut d'innactivitat pot provocar pèrdues en cas d'incidència.
 
-Els arxius WAL permeten fer recuperació fins a un punt concret (PITR: point in time recovery), aplicant els canvis després d’un backup complet.
+Els arxius WAL permeten fer recuperació fins a un punt concret (PITR: point in time recovery), aplicant els canvis després d’un backup complet i incremental.
 
 ## Backup en calent
 
@@ -87,9 +87,10 @@ El backup en calent permet realitzar còpies de seguretat sense aturar el servei
 ### Funcionament
 
 - Backup complet inicial que és la base del backup
+- Backup incremental generat desde la copia completa fins el moment de fer la copia
 - Arxius WAL
 
-Primer es realitza una còpia completa de la bd i a partir d'aquesta totes les modificacions que es fan a la bd es registren als fitxers Wal. Aquests fitxers es van guardant i permeten reconstruir la bd (el seu estat) en qualsevol moment després.
+Primer es realitza una còpia completa de la bd i a partir d'aquesta totes les modificacions que es fan a la bd es registren als fitxers Wal on es generara l'incremental. Aquests fitxers es van guardant i permeten reconstruir la bd (el seu estat) en qualsevol moment després amb perdues casi nules.
 
 ### Configuració necessària
 
@@ -98,12 +99,12 @@ Per habilitar els backups en calent cal confgurar el fitxer en ``postgresql.conf
 ```
 wal_level = replica
 archive_mode = on
-archive_command = 'cp %p /backup/wal/%f'
+archive_command = 'cp %p /var/lib/postgresql/wal_real/%f'
 ```
 
 Realització del backup complet amb: 
 ```
-pg_basebackup -D /backup/base -Fp -Xs -P
+sudo -u postgres pg_basebackup -D /backup/base/<nombackup> -Fp -Xs -T /var/lib/postgresql/data=/backup/base/<nombackup>/extra_data
 ```
 
 # Restauració
@@ -142,7 +143,8 @@ Especificacions de l'estructura que té el sistema del servidor.
 | /var/lib/postgresql | Dades de la BD | Separació crítica de dades |
 | /var/log/postgresql | Logs de Postgres | Monitorització i diagnòstic |
 | /backup | Còpies de seguretat locals | Restauració ràpida |
-| /var/lib/postgresql/15/main | Dades + WAL (pg_wal) | Estructura interna de PostgreSQL |
+| /var/lib/postgresql/15/main | Dades | Estructura interna de PostgreSQL |
+| /var/lib/postgresql/wal | dades Wal (pg_wal) | Fitxers de "logs"del sistema
 | /etc/postgresql | Configuració | Arxius de configuració (postgresql.conf, pg_hba.conf) |
 | /tmp | Fitxers temporals | Aillar els fitxers temporals per seguretat |
 | /home | Usuari | Separar les dades dels usuaris per seguretat |
