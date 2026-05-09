@@ -1,7 +1,7 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-# --- CONSULTES PER A CUSTOMTKINTER ---
+# consultes per a customtkinter
 
 def carregar_visites_del_dia(conn, data):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -29,7 +29,7 @@ def check_dependencia_infermeria(conn, id_inf):
         cur.execute(query, (id_inf, id_inf, id_inf))
         return cur.fetchone()
 
-# --- ALTES ---
+# altes
 
 def alta_pacient_db(conn, d):
     with conn.cursor() as cur:
@@ -101,4 +101,66 @@ def consultar_programacio_metge(conn):
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
         query = "SELECT * FROM vista_metge_programacio ORDER BY cognom1 ASC;"
         cur.execute(query)
-        return cur.fetchall()   
+        return cur.fetchall()
+
+# informes
+
+def informe_planta(conn, id_planta):
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        query = """
+        SELECT 
+            p.nom_planta,
+            COUNT(DISTINCT h.id_habitacio) AS total_habitacions,
+            COUNT(DISTINCT q.id_quirofan) AS total_quirofans,
+            COUNT(DISTINCT ip.id_infermer) AS total_infermeria
+        FROM estructura.planta p
+        LEFT JOIN estructura.habitacio h 
+            ON p.id_planta = h.id_planta
+        LEFT JOIN estructura.quirofan q 
+            ON p.id_planta = q.id_planta
+        LEFT JOIN dades_per.infermer_planta ip 
+            ON p.id_planta = ip.id_planta
+        WHERE p.id_planta = %s
+        GROUP BY p.nom_planta;
+        """
+        cur.execute(query, (id_planta,))
+        return cur.fetchone()
+
+def informe_personal(conn):
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        query = """
+        SELECT id_personal, nom, cognom1, cognom2, telefon, email
+        FROM dades_per.personal
+        ORDER BY cognom1;
+        """
+        cur.execute(query)
+        return cur.fetchall()
+
+def informe_visites_dia(conn, data):
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        query = """
+        SELECT 
+            COUNT(*) AS total_visites
+        FROM pacient.visita
+        WHERE DATE(data_visita) = %s;
+        """
+        cur.execute(query, (data,))
+        return cur.fetchone()
+
+def ranking_metges(conn):
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        query = """
+        SELECT 
+            p.nom,
+            p.cognom1,
+            COUNT(v.id_visita) AS total_visites
+        FROM dades_per.metge m
+        JOIN dades_per.personal p 
+            ON m.id_personal = p.id_personal
+        LEFT JOIN pacient.visita v 
+            ON m.id_personal = v.id_metge
+        GROUP BY p.nom, p.cognom1
+        ORDER BY total_visites DESC;
+        """
+        cur.execute(query)
+        return cur.fetchall()
