@@ -28,6 +28,12 @@ CREATE TABLE seguretat.LOG_ACCESS (
     taula_afectada TEXT
 );
 
+CREATE TABLE seguretat.LOG_LIBRARY(
+    id_library SERIAL PRIMARY KEY,
+    query_text TEXT NOT NULL
+);
+
+
 CREATE TABLE seguretat.LOG_DETAIL(
     id_detall SERIAL PRIMARY KEY,
     id_log INT UNIQUE REFERENCES seguretat.LOG_ACCESS(id_log),
@@ -36,12 +42,6 @@ CREATE TABLE seguretat.LOG_DETAIL(
     taula_afectada VARCHAR(100),
     dades TEXT
 );
-
-CREATE TABLE seguretat.LOG_LIBRARY(
-    id_library SERIAL PRIMARY KEY,
-    query_text TEXT NOT NULL
-);
-
 
 -- estructura
 CREATE TABLE estructura.PLANTA(

@@ -5,7 +5,7 @@ def connectar():    # connectar a la bd de PostgreSQL
     try:
         conn = psycopg2.connect(    # es crea la connexió
             host="localhost",
-            database="hospital",
+            database="hospivibe",
             user="postgres",
             password="postgres"
         )
