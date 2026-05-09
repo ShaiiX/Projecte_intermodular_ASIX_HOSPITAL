@@ -211,23 +211,7 @@ Es separara en dues parts:
 
 - Els logs per als backups, aquest son logs per a tenir access i coneixement el cas del que falli la base de dades,         aquestes es faran copies en altres discs durs, per si el cas de que es cremi o altre inconvenient en el servidor, aquests logs serveixen que al fer el backup inicial poguem recuperar les dades durant el temps del backup i la hora de la fallada.
 
-Per activar aquests logs de forma que ho faci el postgres s'ha de configurar el postgresql.conf de la seguent forma:
-
-```
-#per activar els logs
-logging_collector = on  
-
-#per a guardar INSERT, UPDATE, DELETE
-log_statement = 'mod' 
-
-#posicio dels logs, la seva carpeta i el seu nom
-log_directory = 'pg_log_canvis'
-log_filename = 'canvis-%Y-%m-%d.log'
-
-#cada linea per a fer-ho mes llegible
-log_line_prefix = '%t [%p]: '
-```
-Un cop això es realitzaran els logs de forma completa per a poder utilitzarlos en cas de perdua de la base de dades.
+Aquest logs seràn basicament WAL, es un sistema que a més de replica dades en altres servidors, que s'utilitzarà mes endavant, permet guardar les comandes i així tenir unes copies continues en cas de perdua.
 
 - La segona part es sobre tenir coneixement del que es fa, per a seguretat i auditoria, es guarda dins la base de dades, per a tenir access directe i facil desde la aplicació o exportació si es el cas, si es fa un Import, Update o Delete que es repeteix molt, encomptes de guardar totes les dades hi haura una libreria per a no repetir el texte complert de la consulta.
 

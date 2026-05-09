@@ -22,13 +22,15 @@ Principalment s'ha de parlar de com s'extructura el servidor, més a dir el hard
 | :--- | :--- | :--- |
 | CPU | Intel Xeon E-2434 3.4/5GHz | Permet gestionar múltiples consultes a la vegada i càrrega massiva d’usuaris sense perdre rendiment (té gran capacitat de nuclis i escalabilitat) |
 | RAM | 32 GB | Postgres utilitza molta memòria per cache (shared_buffers), millora molt el rendiment de consultes |
-| Emmagatzematge | SSD NVMe 1TB (RAID 1) | Alta velocitat de lectura i escriptura + redundància en cas de fallada de disc |
+| Emmagatzematge | SSD NVMe 1TB | Alta velocitat de lectura i escriptura + redundància en cas de fallada de disc |
 | Xarxa | 1 Gbps mínim / 10 Gbps recomanat | Necessari per la replicació amb el node secundari i accés d’usuaris |
 | Backup | NAS HP extern | Emmagatzematge segur per a còpies de seguretat separades del servidor |
 
 El servidor ha de ser bastant potent perquè és el que gestiona totes les escriptures de la bd, genera els logs del WAL per a la replicació i dona servei a tots els clients.
 
-Fer servir NVMe amb RAID 1 assegura l'alta velocitat i la tolerància a fallades, és a dir que si falla un disc, el sistema continua funcionant.
+Fer servir NVMe amb RAID 1 assegura l'alta velocitat i la tolerància a fallades, és a dir que si falla un disc, el sistema continua funcionant, en l'apartat del sistema.
+
+Com a seguretat s'aplicara un RAID 5 dins de cada separació de les dades, per lo que comporta la seva reduncancia, facilitat, cost i disponibilitat de dades.
 
 # Rèplica
 
@@ -49,6 +51,9 @@ Slave:
 - Només lectura
 - Rep dades replicades en temps real
 
+Aquesta replicació es fara al núvol, on aquest cas sera el AWS, ja que facilita aquesta feina i ja disponem de les seves funcionalitats.
+Per a manterir les dades segures amb el servidor dins del nuvol es fara una conexió vpn site-to-site, on aconseguim que les dades vaguin més segures entre servidors.
+
 ## Funcionament
 
 El node rep totes les operacions com Insert, update i delete, després aquestes operacions es registren al **WAL** (que és Write-Ahead Log). El slave replica aquests canvis automàticament i en cas de fallada del Master, el slave passa a ser el nou master.
@@ -66,6 +71,10 @@ wal_level = replica
 archive_mode = on
 archive_command = 'test ! -f /var/lib/postgresql/wal_real/%f && cp %p /var/lib/postgresql/wal_real/%f'
 ```
+Al final del document esta el manual de instal·lació tant del servidor master i configuració del slave per a la seva replicació.
+
+En cas de fallada del node master s'haura de executar de forma manual que el servidor slave es promocioni com a master, fer-ho de forma automatica compondria dificultats i temps per a programar-ho a més de poden haber-hi falses fallades.
+[Script de promoció](./Scripts/script-master-fail.sh)
 
 # Backups
 
@@ -88,8 +97,8 @@ El backup en calent permet realitzar còpies de seguretat sense aturar el servei
 
 ### Funcionament
 
-- Backup complet inicial que és la base del backup
-- Backup incremental generat desde la copia completa fins el moment de fer la copia
+- Backup complet inicial que és la base del backup. [script](./Scripts/script-copia-completa.sh)
+- Backup incremental generat desde la copia completa fins el moment de fer la copia [script](./Scripts/script-copia-incremental.sh)
 - Arxius WAL
 
 Primer es realitza una còpia completa de la bd i a partir d'aquesta totes les modificacions que es fan a la bd es registren als fitxers Wal on es generara l'incremental. Aquests fitxers es van guardant i permeten reconstruir la bd (el seu estat) en qualsevol moment després amb perdues casi nules.
@@ -154,6 +163,8 @@ Només s’utilitza en casos crítics on no hi ha cap node disponible i això im
 - Restaurar el backup
 - Aplicar WAL
 
+[Script de restauració completa](./Scripts/script-restauracio-completa.sh)
+
 # Estructura del sistema
 
 Especificacions de l'estructura que té el sistema del servidor.
@@ -168,7 +179,7 @@ Especificacions de l'estructura que té el sistema del servidor.
 | /var/log/postgresql | Logs de Postgres | Monitorització i diagnòstic |
 | /backup | Còpies de seguretat locals | Restauració ràpida |
 | /var/lib/postgresql/15/main | Dades | Estructura interna de PostgreSQL |
-| /var/lib/postgresql/wal | dades Wal (pg_wal) | Fitxers de "logs"del sistema
+| /var/lib/postgresql/wal | dades Wal (pg_wal) | Fitxers de "logs" del sistema |
 | /etc/postgresql | Configuració | Arxius de configuració (postgresql.conf, pg_hba.conf) |
 | /tmp | Fitxers temporals | Aillar els fitxers temporals per seguretat |
 | /home | Usuari | Separar les dades dels usuaris per seguretat |
@@ -199,4 +210,4 @@ Gestió de logs a /var/log/postgresql/ serán errors del servidor, connexions.
 
 ---
 
-[PDF Manual d'instal·lació i configuració](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/blob/main/Esquema-Alta-Disponibilitat/Manual-instalacio-replicacio.pdf)
+[PDF Manual d'instal·lació i configuració](./Manual-instalacio-configuracio.pdf)
