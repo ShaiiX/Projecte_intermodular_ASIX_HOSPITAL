@@ -10,6 +10,7 @@ from moduls.inventari import menu_inventari
 from moduls.habitacio import menu_habitacio
 from moduls.historial import menu_historial
 from moduls.programacio_metges import menu_programacio_metges
+from moduls.informes import menu_informes
 
 
 def obrir_manteniment():
@@ -33,7 +34,8 @@ def obrir_manteniment():
         ("Inventari Aparells", menu_inventari),
         ("Habitacions", menu_habitacio),
         ("Historial Pacient", menu_historial),
-        ("Programació Metges", menu_programacio_metges)
+        ("Programació Metges", menu_programacio_metges),
+        ("Informes", menu_informes)
     ]
 
     # genera un boto per a cada funcionalitat disponible
