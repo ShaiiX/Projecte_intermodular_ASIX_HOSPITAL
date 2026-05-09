@@ -39,6 +39,7 @@ BEGIN
 
     RETURN NULL; 
     
+END;
 $$ LANGUAGE plpgsql;
 
 -- exemple de incorporar el trigger a una taula en concret
