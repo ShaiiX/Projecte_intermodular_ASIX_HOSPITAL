@@ -4,7 +4,7 @@ from tkinter import messagebox
 def connectar():    # connectar a la bd de PostgreSQL
     try:
         conn = psycopg2.connect(    # es crea la connexió
-            host="192.168.1.128",
+            host="10.94.254.103",
             database="hospivibe",
             user="postgres",
             password="P@ssw0rd1234@"
