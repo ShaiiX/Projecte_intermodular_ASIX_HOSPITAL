@@ -36,7 +36,7 @@ Les dades creades segueixen el mateix format que les dades reals del sistema.
 - Pacients relacionats amb visites
 - Metges relacionats amb pacients
 
-Hem afegit una petita part de dades amb caràcters especials per provar el UFT-8
+Una petita part de la informació s’ha generat en alfabet ciríl·lic per validar compatibilitat UTF-8 i internacionalització del sistema.
 
 ## Generació de dades
 
