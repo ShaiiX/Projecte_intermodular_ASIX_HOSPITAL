@@ -11,6 +11,7 @@ from moduls.habitacio import menu_habitacio
 from moduls.historial import menu_historial
 from moduls.programacio_metges import menu_programacio_metges
 from moduls.informes import menu_informes
+from moduls.dummy_data import menu_dummy_data
 
 
 def obrir_manteniment():
@@ -19,7 +20,7 @@ def obrir_manteniment():
     # assigna el titol de la finestra
     app.title("Bloc de Manteniment")
     # fixa una mida base per al menu
-    app.geometry("500x600")
+    app.geometry("500x700")
 
     # mostra el titol superior del menu
     ctk.CTkLabel(app, text="Bloc de Manteniment", font=("Arial", 24, "bold")).pack(pady=20)
@@ -35,7 +36,8 @@ def obrir_manteniment():
         ("Habitacions", menu_habitacio),
         ("Historial Pacient", menu_historial),
         ("Programació Metges", menu_programacio_metges),
-        ("Informes", menu_informes)
+        ("Informes", menu_informes),
+        ("Dummy Data", menu_dummy_data)
     ]
 
     # genera un boto per a cada funcionalitat disponible

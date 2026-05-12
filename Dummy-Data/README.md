@@ -74,3 +74,8 @@ S’han creat índexs en les taules més importants per millorar el rendiment de
 | Python | Scripts |
 | Faker | Generació de dades |
 | psycopg2 | Connexió amb Postgres |
+
+
+---
+
+Instal·lació de Faker: pip install faker psycopg2-binary
