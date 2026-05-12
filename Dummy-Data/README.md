@@ -40,18 +40,26 @@ Una petita part de la informació s’ha generat en alfabet ciríl·lic per vali
 
 ## Generació de dades
 
-La generació de dades s’ha fet amb Python utilitzant la llibreria Faker.
+La generació de dades s’ha fet amb Python des de l’aplicació, dins el mòdul:
 
-Aquest sistema permet crear moltes dades automàticament sense haver-les d’introduir manualment.
+`AplicacioSenceraProg/moduls/dummy_data.py`
+
+El sistema crea les dades de forma automàtica i fa servir insercions massives amb `execute_values` de `psycopg2`, perquè carregar 100.000 visites i 50.000 pacients sigui més ràpid que inserir registre per registre.
+
+També es crea un schema auxiliar anomenat `dummy_data`, on es guarden les execucions i els IDs dels registres creats. Això permet eliminar només la informació dummy sense esborrar dades reals de l’hospital.
 
 ## Execució des de l’aplicació
 
-La generació del dummy data es pot executar des del menú de l’aplicació. Hi ha dues opcions per facilitar les proves ràpidament:
+La generació del dummy data es pot executar des del menú de l’aplicació:
+
+`Bloc de Manteniment > Dummy Data`
+
+Hi ha dues opcions per facilitar les proves ràpidament:
 
 - Generar dummy data
 - Eliminar-la
 
-Es pot eliminar les dades fictícies creades durant les proves, per poder deixar la BD neta de nou.
+L’opció d’eliminar esborra les dades segons els IDs guardats al schema `dummy_data`, respectant l’ordre de les claus foranes.
 
 ## Índexs
 
@@ -62,7 +70,10 @@ S’han creat índexs en les taules més importants per millorar el rendiment de
 | Taula | Camp | Motiu |
 | :--- | :--- | :--- |
 | pacient.pacient | dni | Cerca ràpida de pacients |
-| pacient.visita | data_visita | Consultes per dia |
+| pacient.pacient | tarjeta_sanitaria | Cerca ràpida per targeta sanitària |
+| dades_per.personal | dni | Cerca ràpida de personal |
+| dades_per.personal | email | Cerca ràpida per correu |
+| pacient.visita | data | Consultes per dia |
 | pacient.visita | id_pacient | Historials |
 | pacient.visita | id_metge | Consultes de metges |
 
@@ -71,11 +82,15 @@ S’han creat índexs en les taules més importants per millorar el rendiment de
 | Tecnologia | Ús |
 | :--- | :--- |
 | PostgreSQL | Base de dades |
-| Python | Scripts |
-| Faker | Generació de dades |
+| Python | Generació de dades |
 | psycopg2 | Connexió amb Postgres |
+| customtkinter | Opció de menú dins l'aplicació |
 
 
 ---
 
-Instal·lació de Faker: pip install faker psycopg2-binary
+Instal·lació recomanada:
+
+`pip install psycopg2-binary customtkinter`
+
+Nota: el mòdul actual genera les dades amb llistes internes i funcions pròpies. Faker es pot utilitzar més endavant si es vol ampliar la varietat de noms, adreces o municipis.
