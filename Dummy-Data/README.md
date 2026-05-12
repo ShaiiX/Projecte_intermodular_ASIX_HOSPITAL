@@ -44,9 +44,9 @@ La generació de dades s’ha fet amb Python des de l’aplicació, dins el mòd
 
 `AplicacioSenceraProg/moduls/dummy_data.py`
 
-El sistema crea les dades de forma automàtica i fa servir insercions massives amb `execute_values` de `psycopg2`, perquè carregar 100.000 visites i 50.000 pacients sigui més ràpid que inserir registre per registre.
+El sistema crea les dades de forma automàtica utilitzant la llibreria `Faker` per generar noms, cognoms, telèfons, adreces i dates de naixement realistes.
 
-També es crea un schema auxiliar anomenat `dummy_data`, on es guarden les execucions i els IDs dels registres creats. Això permet eliminar només la informació dummy sense esborrar dades reals de l’hospital.
+També fa servir insercions massives amb `execute_values` de `psycopg2`, perquè carregar 100.000 visites i 50.000 pacients sigui més ràpid que inserir registre per registre.
 
 ## Execució des de l’aplicació
 
@@ -83,14 +83,17 @@ S’han creat índexs en les taules més importants per millorar el rendiment de
 | :--- | :--- |
 | PostgreSQL | Base de dades |
 | Python | Generació de dades |
+| Faker | Generació de noms, telèfons, adreces i dates |
 | psycopg2 | Connexió amb Postgres |
 | customtkinter | Opció de menú dins l'aplicació |
 
 
 ---
 
-Instal·lació recomanada:
+---
 
-`pip install psycopg2-binary customtkinter`
+Instal·lació:
 
-Nota: el mòdul actual genera les dades amb llistes internes i funcions pròpies. Faker es pot utilitzar més endavant si es vol ampliar la varietat de noms, adreces o municipis.
+`pip install faker psycopg2-binary customtkinter`
+
+Els DNI, emails i targetes sanitàries es generen amb format controlat pel codi per assegurar que siguin únics.

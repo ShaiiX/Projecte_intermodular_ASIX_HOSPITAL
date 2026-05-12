@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from tkinter import messagebox
 
 import customtkinter as ctk
+from faker import Faker
 from psycopg2.extras import execute_values
 
 from db import connectar
@@ -17,17 +18,11 @@ NETEJA = 100
 ADMINISTRACIO = 50
 
 
-# llistes per generar dades coherents sense dependre sempre de Faker
-NOMS = [
-    "Marc", "Júlia", "Pau", "Laia", "Nil", "Aina", "Arnau", "Martina",
-    "Pol", "Carla", "Biel", "Clàudia", "Jan", "Ona", "Joel", "Nora"
-]
-COGNOMS = [
-    "Garcia", "Martínez", "López", "Sánchez", "Pérez", "González",
-    "Ferrer", "Vidal", "Serra", "Rovira", "Torres", "Navarro"
-]
-NOMS_CIRILLICS = ["Алексей", "Мария", "Иван", "Анна", "Дмитрий", "Елена"]
-COGNOMS_CIRILLICS = ["Иванов", "Петрова", "Смирнов", "Кузнецова", "Попов"]
+# Faker genera dades realistes amb format semblant al que tindria l'hospital.
+fake = Faker("es_ES")
+fake_cirillic = Faker("ru_RU")
+Faker.seed(1234)
+
 ESPECIALITATS = [
     "Medicina interna", "Cardiologia", "Pediatria", "Traumatologia",
     "Neurologia", "Dermatologia", "Oncologia", "Urgencies"
@@ -239,9 +234,9 @@ def _crear_personal(cur, run_id, tipus, quantitat, dni_base):
             cognom1,
             cognom2,
             _dni(numero),
-            f"6{numero % 100000000:08d}",
+            fake.phone_number()[:20],
             f"{tipus}.{i:05d}@dummy.hospital.local",
-            f"Carrer Dummy {i + 1}, Girona",
+            fake.address().replace("\n", ", "),
             _data_naixement(22, 67),
             None
         ))
@@ -333,7 +328,7 @@ def _crear_pacients(cur, run_id):
             nom,
             f"{cognom1} {cognom2}",
             _dni(numero),
-            f"7{numero % 100000000:08d}",
+            fake.phone_number()[:20],
             f"pacient.{i:05d}@dummy.hospital.local",
             _data_naixement(0, 96),
             f"TS-DMY-{i:08d}",
@@ -420,17 +415,17 @@ def _delete_by_ids(cur, table_name, pk_column):
 
 
 def _persona(i):
-    # cada 100 registres fem servir alfabet ciríl·lic per validar UTF-8
+    # cada 100 registres fem servir Faker en rus per validar alfabet ciríl·lic i UTF-8
     if i % 100 == 0:
         return (
-            NOMS_CIRILLICS[(i // 100) % len(NOMS_CIRILLICS)],
-            COGNOMS_CIRILLICS[(i // 100) % len(COGNOMS_CIRILLICS)],
-            COGNOMS_CIRILLICS[(i // 50) % len(COGNOMS_CIRILLICS)]
+            fake_cirillic.first_name(),
+            fake_cirillic.last_name(),
+            fake_cirillic.last_name()
         )
     return (
-        NOMS[i % len(NOMS)],
-        COGNOMS[i % len(COGNOMS)],
-        COGNOMS[(i * 3) % len(COGNOMS)]
+        fake.first_name(),
+        fake.last_name(),
+        fake.last_name()
     )
 
 
@@ -442,5 +437,4 @@ def _dni(numero):
 
 def _data_naixement(edat_min, edat_max):
     # retorna una data de naixement coherent dins del rang d'edat indicat
-    dies = random.randint(edat_min * 365, edat_max * 365)
-    return (datetime.now() - timedelta(days=dies)).date()
+    return fake.date_between(start_date=f"-{edat_max}y", end_date=f"-{edat_min}y")
