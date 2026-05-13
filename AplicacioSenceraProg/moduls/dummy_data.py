@@ -2,11 +2,9 @@ import random
 import threading
 from datetime import datetime, timedelta
 from tkinter import messagebox
-
 import customtkinter as ctk
 from faker import Faker
 from psycopg2.extras import execute_values
-
 from db import connectar
 
 
@@ -18,8 +16,9 @@ NETEJA = 100
 ADMINISTRACIO = 50
 
 
-# Faker genera dades realistes amb format semblant al que tindria l'hospital.
+# quantitats grans per provar rendiment amb un volum semblant a un entorn real
 fake = Faker("es_ES")
+# segon faker per incloure noms amb alfabet cirillic i comprovar utf 8
 fake_cirillic = Faker("ru_RU")
 Faker.seed(1234)
 
@@ -36,42 +35,66 @@ TORNS = ["Mati", "Tarda", "Nit"]
 
 
 def menu_dummy_data():
-    # finestra del menú especific per generar o eliminar les dades de prova
+    # finestra del menu especific per generar o eliminar les dades de prova
     finestra = ctk.CTkToplevel()
     finestra.title("Dummy Data")
-    finestra.geometry("520x360")
+    finestra.geometry("560x500")
 
+    # titol principal de la finestra
     ctk.CTkLabel(
         finestra,
         text="Dummy Data",
         font=("Arial", 24, "bold")
     ).pack(pady=(25, 10))
 
+    # text breu amb la funcio de la pantalla
     ctk.CTkLabel(
         finestra,
         text=(
-            "Genera les dades mínimes de prova i els índexs necessaris.\n"
-            "També pots eliminar només la informació dummy creada aquí."
+            "Genera les dades prova i els índexs necessaris. \n "
+            "Pots eliminar només la informació dummy creada aquí"
         )
     ).pack(pady=10)
 
+    # etiqueta per mostrar l'estat de la tasca actual
     estat = ctk.CTkLabel(finestra, text="Preparat")
-    estat.pack(pady=15)
+    estat.pack(pady=(10, 8))
+
+    # caixa on es mostren els resultats de generar o eliminar dades
+    resultats = ctk.CTkTextbox(finestra, width=480, height=120)
+    resultats.pack(pady=(0, 15))
+    resultats.insert("1.0", "encara no hi ha resultats")
+    resultats.configure(state="disabled")
+
+    def mostrar_resultat(text):
+        # actualitza la caixa de resultats amb el missatge rebut
+        resultats.configure(state="normal")
+        resultats.delete("1.0", "end")
+        resultats.insert("1.0", text)
+        resultats.configure(state="disabled")
 
     def executar(tasca, missatge):
-        # executem la tasca en segon pla perquè la interfície no quedi congelada
+        # executem la tasca en segon pla perque la interficie no quedi congelada
         def worker():
             try:
+                # actualitzem el missatge abans de comencar la feina
                 finestra.after(0, lambda: estat.configure(text=missatge))
+                finestra.after(0, lambda: mostrar_resultat(missatge))
                 resultat = tasca()
+                # avisem l'usuari quan la tasca acaba be
                 finestra.after(0, lambda: estat.configure(text="Acabat correctament"))
+                finestra.after(0, lambda: mostrar_resultat(resultat))
                 finestra.after(0, lambda: messagebox.showinfo("Dummy Data", resultat))
             except Exception as exc:
+                # mostrem qualsevol error capturat durant el proces
                 finestra.after(0, lambda: estat.configure(text="Error"))
+                finestra.after(0, lambda error=exc: mostrar_resultat(f"error\n{error}"))
                 finestra.after(0, lambda error=exc: messagebox.showerror("Error", str(error)))
 
+        # el fil daemon es tanca automaticament amb l'aplicacio
         threading.Thread(target=worker, daemon=True).start()
 
+    # boto per omplir la base de dades amb registres ficticis
     ctk.CTkButton(
         finestra,
         text="Generar dummy data",
@@ -79,6 +102,7 @@ def menu_dummy_data():
         command=lambda: executar(generar_dummy_data, "Generant dades... pot trigar uns minuts")
     ).pack(pady=10)
 
+    # boto per eliminar nomes els registres creats per aquest modul
     ctk.CTkButton(
         finestra,
         text="Eliminar dummy data",
@@ -90,16 +114,19 @@ def menu_dummy_data():
 
 
 def generar_dummy_data():
-    # connexio principal a Postgresl per carregar totes les dades fictícies
+    # connexio principal a postgresql per carregar totes les dades ficticies
     conn = connectar()
+    # si no hi ha connexio aturem el proces abans de tocar dades
     if conn is None:
         raise RuntimeError("No s'ha pogut connectar a la base de dades")
 
     try:
+        # la transaccio es confirma o es desfara sencera segons el resultat
         with conn:
             with conn.cursor() as cur:
-                # creem les taules auxiliars que permeten saber què s'ha generat
+                # creem les taules auxiliars que permeten saber que s'ha generat
                 _preparar_control(cur)
+                # evitem barrejar dues carregues dummy diferents
                 cur.execute("SELECT COUNT(*) FROM dummy_data.ids")
                 if cur.fetchone()[0] > 0:
                     raise RuntimeError(
@@ -109,18 +136,19 @@ def generar_dummy_data():
                 _crear_indexs(cur)
                 run_id = _crear_execucio(cur)
 
-                # primer es crea el personal perquè les visites necessiten metges
+                # primer es crea el personal perque les visites necessiten metges
                 metges_ids = _crear_personal(cur, run_id, "metge", METGES, 80000000)
                 infermers_ids = _crear_personal(cur, run_id, "infermer", INFERMERS, 80100000)
+                # el personal no sanitari tambe serveix per omplir les taules filles
                 _crear_personal(cur, run_id, "neteja", NETEJA, 80200000)
                 _crear_personal(cur, run_id, "administracio", ADMINISTRACIO, 80300000)
                 # relacionem cada infermer amb un metge de forma repartida
                 _crear_dependencia_infermers(cur, infermers_ids, metges_ids)
-                # després es creen pacients i visites amb claus foranes vàlides
+                # despres es creen pacients i visites amb claus foranes valides
                 pacients_ids = _crear_pacients(cur, run_id)
                 _crear_visites(cur, run_id, pacients_ids, metges_ids)
 
-                # marquem l'execució com finalitzada correctament
+                # marquem l'execucio com finalitzada correctament
                 cur.execute(
                     """
                     UPDATE dummy_data.execucio
@@ -131,28 +159,33 @@ def generar_dummy_data():
                 )
 
         return (
+            # resum final que es mostra a la finestra
             f"S'han creat {PACIENTS} pacients, {VISITES} visites, "
             f"{METGES} metges, {INFERMERS} infermeres, "
             f"{NETEJA} persones de neteja i {ADMINISTRACIO} d'administració."
         )
     finally:
+        # tanquem sempre la connexio encara que hi hagi error
         conn.close()
 
 
 def eliminar_dummy_data():
-    # elimina només les dades registrades a dummy_data.ids
+    # elimina nomes les dades registrades a dummy_data ids
     conn = connectar()
+    # sense connexio no es pot fer la neteja
     if conn is None:
         raise RuntimeError("No s'ha pogut connectar a la base de dades")
 
     try:
+        # tota la neteja queda dins una unica transaccio
         with conn:
             with conn.cursor() as cur:
                 _preparar_control(cur)
+                # comptem les referencies abans de buidar el registre
                 cur.execute("SELECT COUNT(*) FROM dummy_data.ids")
                 total = cur.fetchone()[0]
 
-                # primer borrem relacions intermèdies per evitar errors de claus foranes
+                # primer borrem relacions intermedies per evitar errors de claus foranes
                 cur.execute("""
                     DELETE FROM dades_per.infermer_metge
                     WHERE id_infermer IN (
@@ -164,7 +197,7 @@ def eliminar_dummy_data():
                         WHERE table_name = 'dades_per.personal'
                     )
                 """)
-                # l'ordre d'esborrat respecta les dependències entre taules
+                # ordre d'esborrat respecta les dependencies entre taules
                 _delete_by_ids(cur, "pacient.visita", "id_visita")
                 _delete_by_ids(cur, "pacient.pacient", "id_pacient")
                 _delete_by_ids(cur, "dades_per.metge", "id_personal")
@@ -172,17 +205,20 @@ def eliminar_dummy_data():
                 _delete_by_ids(cur, "dades_per.vari", "id_personal")
                 _delete_by_ids(cur, "dades_per.personal", "id_personal")
 
+                # netegem el control intern quan ja no queden dades dummy
                 cur.execute("DELETE FROM dummy_data.ids")
                 cur.execute("DELETE FROM dummy_data.execucio")
 
         return f"S'han eliminat {total} referències dummy de la base de dades."
     finally:
+        # tanquem la connexio despres de la neteja
         conn.close()
 
 
 def _preparar_control(cur):
-    # schema auxiliar per guardar execucions i IDs generats
+    # schema auxiliar per guardar execucions i ids generats
     cur.execute("CREATE SCHEMA IF NOT EXISTS dummy_data")
+    # taula per saber quan comenca i acaba cada generacio
     cur.execute("""
         CREATE TABLE IF NOT EXISTS dummy_data.execucio (
             id_execucio SERIAL PRIMARY KEY,
@@ -191,6 +227,7 @@ def _preparar_control(cur):
             finalitzada BOOLEAN DEFAULT FALSE
         )
     """)
+    # taula amb les claus primaries que despres es podran eliminar
     cur.execute("""
         CREATE TABLE IF NOT EXISTS dummy_data.ids (
             id_execucio INT REFERENCES dummy_data.execucio(id_execucio) ON DELETE CASCADE,
@@ -205,29 +242,35 @@ def _preparar_control(cur):
 def _crear_indexs(cur):
     # indexs escollits per camps usats en cerques, joins i filtres
     indexs = [
+        # indexs per buscar pacients per identificadors habituals
         "CREATE INDEX IF NOT EXISTS idx_dummy_pacient_dni ON pacient.pacient (dni)",
         "CREATE INDEX IF NOT EXISTS idx_dummy_pacient_targeta ON pacient.pacient (tarjeta_sanitaria)",
+        # indexs per accelerar consultes de visites
         "CREATE INDEX IF NOT EXISTS idx_dummy_visita_data ON pacient.visita (data)",
         "CREATE INDEX IF NOT EXISTS idx_dummy_visita_pacient ON pacient.visita (id_pacient)",
         "CREATE INDEX IF NOT EXISTS idx_dummy_visita_metge ON pacient.visita (id_metge)",
+        # indexs per trobar personal per dades de contacte
         "CREATE INDEX IF NOT EXISTS idx_dummy_personal_dni ON dades_per.personal (dni)",
         "CREATE INDEX IF NOT EXISTS idx_dummy_personal_email ON dades_per.personal (email)"
     ]
+    # apliquem tots els indexs si encara no existeixen
     for index in indexs:
         cur.execute(index)
 
 
 def _crear_execucio(cur):
-    # cada generació queda identificada amb un id_execucio
+    # cada generacio queda identificada amb un id_execucio
     cur.execute("INSERT INTO dummy_data.execucio DEFAULT VALUES RETURNING id_execucio")
     return cur.fetchone()[0]
 
 
 def _crear_personal(cur, run_id, tipus, quantitat, dni_base):
-    # prepara totes les files de personal abans d'inserirles per lots
+    # prepara totes les files de personal abans d'inserir les per lots
     rows = []
     for i in range(quantitat):
+        # generem nom i cognoms amb faker
         nom, cognom1, cognom2 = _persona(i)
+        # el dni base evita xocs entre tipus de personal
         numero = dni_base + i
         rows.append((
             nom,
@@ -241,7 +284,7 @@ def _crear_personal(cur, run_id, tipus, quantitat, dni_base):
             None
         ))
 
-    # execute_values fa insercions massives molt més ràpides que inserir una a una
+    # execute_values fa insercions massives molt mes rapides que inserir una a una
     ids = execute_values(
         cur,
         """
@@ -255,12 +298,13 @@ def _crear_personal(cur, run_id, tipus, quantitat, dni_base):
         fetch=True
     )
     ids = [row[0] for row in ids]
-    # guarda els IDs per poder eliminar aquesta dummy data després
+    # guarda els ids per poder eliminar aquesta dummy data despres
     _registrar_ids(cur, run_id, "dades_per.personal", "id_personal", ids)
 
     if tipus == "metge":
-        # dades específiques de la taula filla METGE
+        # dades especifiques de la taula filla metge
         metges = [
+            # especialitats repartides de manera ciclica
             (id_personal, ESPECIALITATS[i % len(ESPECIALITATS)], "Curriculum dummy", f"COL-DMY-{i:05d}")
             for i, id_personal in enumerate(ids)
         ]
@@ -276,8 +320,9 @@ def _crear_personal(cur, run_id, tipus, quantitat, dni_base):
         )
         _registrar_ids(cur, run_id, "dades_per.metge", "id_personal", ids)
     elif tipus == "infermer":
-        # dades específiques de la taula filla INFERMER
+        # dades especifiques de la taula filla infermer
         infermers = [
+            # experiencia i torn repartits de forma simple
             (id_personal, (i % 25) + 1, TORNS[i % len(TORNS)])
             for i, id_personal in enumerate(ids)
         ]
@@ -289,8 +334,9 @@ def _crear_personal(cur, run_id, tipus, quantitat, dni_base):
         )
         _registrar_ids(cur, run_id, "dades_per.infermer", "id_personal", ids)
     else:
-        # neteja i administració es guarden dins la taula VARI
+        # neteja i administracio es guarden dins la taula vari
         feina = "Neteja" if tipus == "neteja" else "Administracio"
+        # l'horari diferencia administracio de neteja
         horari = "Dilluns-Divendres 08:00-15:00" if tipus == "administracio" else "Torns rotatius"
         varis = [(id_personal, feina, horari) for id_personal in ids]
         execute_values(
@@ -307,9 +353,11 @@ def _crear_personal(cur, run_id, tipus, quantitat, dni_base):
 def _crear_dependencia_infermers(cur, infermers_ids, metges_ids):
     # assigna infermers a metges de manera circular i equilibrada
     relacions = [
+        # cada infermer queda vinculat a un metge existent
         (id_infermer, metges_ids[i % len(metges_ids)])
         for i, id_infermer in enumerate(infermers_ids)
     ]
+    # inserim totes les relacions infermer metge en un sol lot
     execute_values(
         cur,
         "INSERT INTO dades_per.infermer_metge (id_infermer, id_metge) VALUES %s",
@@ -319,10 +367,12 @@ def _crear_dependencia_infermers(cur, infermers_ids, metges_ids):
 
 
 def _crear_pacients(cur, run_id):
-    #genera pacients amb DNI, telèfon, email i targeta sanitària únics
+    # genera pacients amb dni telefon email i targeta sanitaria unics
     rows = []
     for i in range(PACIENTS):
+        # dades personals basiques del pacient
         nom, cognom1, cognom2 = _persona(i)
+        # numeracio separada del personal per evitar duplicats
         numero = 30000000 + i
         rows.append((
             nom,
@@ -335,7 +385,7 @@ def _crear_pacients(cur, run_id):
             None
         ))
 
-    # inserció massiva de pacients i retorn dels ids creats
+    # insercio massiva de pacients i retorn dels ids creats
     ids = execute_values(
         cur,
         """
@@ -349,6 +399,7 @@ def _crear_pacients(cur, run_id):
         fetch=True
     )
     ids = [row[0] for row in ids]
+    # registrem els pacients creats per poder esborrar los despres
     _registrar_ids(cur, run_id, "pacient.pacient", "id_pacient", ids)
     return ids
 
@@ -358,8 +409,9 @@ def _crear_visites(cur, run_id, pacients_ids, metges_ids):
     ara = datetime.now()
     rows = []
     for i in range(VISITES):
-        # dates repartides en els últims mesos per fer proves de filtres per data
+        # dates repartides en els ultims mesos per fer proves de filtres per data
         data = ara - timedelta(days=random.randint(0, 900), hours=random.randint(0, 23))
+        # pacient metge i diagnostic es reparteixen de manera ciclica
         rows.append((
             pacients_ids[i % len(pacients_ids)],
             metges_ids[i % len(metges_ids)],
@@ -367,7 +419,7 @@ def _crear_visites(cur, run_id, pacients_ids, metges_ids):
             DIAGNOSTICS[i % len(DIAGNOSTICS)]
         ))
 
-    # inserció massiva de visites que és la taula més gran del dummy data
+    # insercio massiva de visites que es la taula mes gran del dummy data
     ids = execute_values(
         cur,
         """
@@ -381,12 +433,14 @@ def _crear_visites(cur, run_id, pacients_ids, metges_ids):
         fetch=True
     )
     ids = [row[0] for row in ids]
+    # registrem les visites per poder netejar la taula visita
     _registrar_ids(cur, run_id, "pacient.visita", "id_visita", ids)
 
 
 def _registrar_ids(cur, run_id, table_name, pk_column, ids):
-    # guarda cada clau primària creada per poder fer una neteja exacta
+    # guarda cada clau primaria creada per poder fer una neteja exacta
     rows = [(run_id, table_name, pk_column, valor) for valor in ids]
+    # el registre es fa tambe per lots per no alentir la carrega
     execute_values(
         cur,
         """
@@ -400,7 +454,8 @@ def _registrar_ids(cur, run_id, table_name, pk_column, ids):
 
 
 def _delete_by_ids(cur, table_name, pk_column):
-    # borra registres d'una taula segons els IDs guardats al control dummy
+    # borra registres d'una taula segons els ids guardats al control dummy
+    # table_name i pk_column venen del mateix codi i no de l'usuari
     cur.execute(
         f"""
         DELETE FROM {table_name}
@@ -415,13 +470,15 @@ def _delete_by_ids(cur, table_name, pk_column):
 
 
 def _persona(i):
-    # cada 100 registres fem servir Faker en rus per validar alfabet ciríl·lic i UTF-8
+    # cada 100 registres fem servir faker en rus per validar alfabet cirillic i utf 8
     if i % 100 == 0:
+        # retornem noms cirillics per comprovar caracters no llatins
         return (
             fake_cirillic.first_name(),
             fake_cirillic.last_name(),
             fake_cirillic.last_name()
         )
+    # la resta de registres fan servir dades espanyoles simulades
     return (
         fake.first_name(),
         fake.last_name(),
@@ -430,11 +487,13 @@ def _persona(i):
 
 
 def _dni(numero):
-    # calcula la lletra del DNI a partir del número
+    # calcula la lletra del dni a partir del numero
     lletres = "TRWAGMYFPDXBNJZSQVHLCKE"
+    # el modul 23 dona la posicio de la lletra oficial
     return f"{numero:08d}{lletres[numero % 23]}"
 
 
 def _data_naixement(edat_min, edat_max):
     # retorna una data de naixement coherent dins del rang d'edat indicat
+    # faker calcula una data aleatoria entre les dues edats
     return fake.date_between(start_date=f"-{edat_max}y", end_date=f"-{edat_min}y")
