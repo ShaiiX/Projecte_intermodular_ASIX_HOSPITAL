@@ -94,3 +94,6 @@ Instal·lació:
 `pip install faker psycopg2-binary customtkinter`
 
 Els DNI, emails i targetes sanitàries es generen amb format controlat pel codi per assegurar que siguin únics.
+
+[Dummy Data fitxer](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/blob/main/AplicacioSenceraProg/moduls/dummy_data.py) |
+[Aplicació](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/AplicacioSenceraProg)
