@@ -1,28 +1,41 @@
 import customtkinter as ctk
 from db import connectar
 import consultes
+from estil import *
 
 
 def menu_inventari():
-    # mostra l'inventari d'aparells per quirofan
     f = ctk.CTkToplevel()
-    # posa el titol de la finestra
-    f.title("Inventari")
-    # fixa la mida de la finestra
-    f.geometry("600x400")
+    f.lift()
+    f.focus_force()
+    f.attributes("-topmost", True)
+    setup(f, "Inventari Aparells", "620x480")
+    topbar(f, "Inventari", icon="🏥", back_cmd=f.destroy,
+           breadcrumbs=[("Manteniment", None), ("Inventari", None)])
 
-    # caixa on es carrega l'inventari
-    box = ctk.CTkTextbox(f, width=550, height=300)
-    box.pack(pady=20)
+    body = ctk.CTkFrame(f, fg_color=C["bg"], corner_radius=0)
+    body.pack(fill="both", expand=True, padx=20, pady=16)
 
-    # obté les dades directament en obrir la finestra
-    conn = connectar()
-    res = consultes.consultar_inventari(conn)
+    sl = ctk.CTkLabel(body, text="Carregant...", font=F_SMALL, text_color=C["muted"])
+    sl.pack(anchor="w", pady=(0, 8))
 
-    # escriu cada registre dins del quadre de text
-    for r in res:
-        # mostra les dades principals de cada aparell
-        box.insert("end", f"{r['num_quirofan']} | {r['nom_aparell']} | {r['marca']} | {r['quantitat']}\n")
+    box = textbox(body, width=580, height=340)
+    box.pack()
 
-    # tanca la connexio quan ja no cal
-    conn.close()
+    # Capçalera de la taula
+    box.insert("end", f"{'Quiròfan':<12}{'Aparell':<28}{'Marca':<20}{'Quantitat'}\n")
+    box.insert("end", "─" * 72 + "\n")
+
+    try:
+        conn = connectar()
+        res = consultes.consultar_inventari(conn)
+        conn.close()
+        for r in res:
+            box.insert("end",
+                f"{str(r.get('num_quirofan','')):<12}"
+                f"{str(r.get('nom_aparell','')):<28}"
+                f"{str(r.get('marca','')):<20}"
+                f"{r.get('quantitat','')}\n")
+        ok(sl, f"✓  {len(res)} registres carregats")
+    except Exception as ex:
+        err(sl, str(ex))

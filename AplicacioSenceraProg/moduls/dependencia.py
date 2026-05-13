@@ -1,35 +1,33 @@
 import customtkinter as ctk
 from db import connectar
 import consultes
+from estil import *
 
 
 def menu_dependencia():
-    # comprova de qui depen un membre d'infermeria
     f = ctk.CTkToplevel()
-    # posa el titol de la finestra
-    f.title("Dependència Infermeria")
+    f.lift()
+    f.focus_force()
+    f.attributes("-topmost", True)
+    setup(f, "Dependència Infermeria", "460x320")
+    topbar(f, "Dependència", icon="🔗", back_cmd=f.destroy,
+           breadcrumbs=[("Manteniment", None), ("Dependència", None)])
 
-    # camp per indicar l'identificador a comprovar
-    e = ctk.CTkEntry(f)
-    e.pack(pady=20)
+    c = mk_card(f)
+    c.pack(fill="x", padx=20, pady=20)
+    card_section(c, "Verificar dependència d'infermeria", icon="🔗")
 
-    # etiqueta on es mostra el resultat
-    lbl = ctk.CTkLabel(f, text="")
-    lbl.pack()
+    e = field(c, "ID Infermer/a", "Introdueix l'identificador")
+    sl = status_lbl(c)
 
     def check():
-        # busca la dependencia i actualitza el text del resultat
         conn = connectar()
-        res = consultes.check_dependencia_infermeria(conn, e.get())
-
-        if res:
-            # mostra si depen d'un metge o d'una planta
-            lbl.configure(text=f"{res['nom']} → {'Metge' if res['es_metge'] else 'Planta'}")
-        else:
-            # informa si no existeix cap resultat
-            lbl.configure(text="No trobat")
-
+        res = consultes.check_dependencia_infermeria(conn, e.get().strip())
         conn.close()
+        if res:
+            dep = "Metge" if res["es_metge"] else "Planta"
+            ok(sl, f"✓  {res['nom']} {res['cognom1']} → assignat/da a {dep}")
+        else:
+            err(sl, "No s'ha trobat cap resultat")
 
-    # boto per llançar la comprovacio
-    ctk.CTkButton(f, text="Verificar", command=check).pack()
+    btn_primary(c, "🔍  Verificar", check)

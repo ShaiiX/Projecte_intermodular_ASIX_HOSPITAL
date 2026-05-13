@@ -296,6 +296,9 @@ def obrir_menu(rol):
 # ── Gestió d'usuaris ──────────────────────────────────────────────────────────
 def gestio_usuaris():
     g = ctk.CTkToplevel()
+    g.lift()
+    g.focus_force()
+    g.attributes("-topmost", True)
     g.title("Gestió d'usuaris")
     g.geometry("420x340")
     g.configure(fg_color=COLORS["bg_dark"])

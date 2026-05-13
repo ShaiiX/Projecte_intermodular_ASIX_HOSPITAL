@@ -1,30 +1,40 @@
 import customtkinter as ctk
 from db import connectar
 import consultes
+from estil import *
 
 
 def menu_habitacio():
-    # mostra la informació d'una habitacio i els seus ingressos
     f = ctk.CTkToplevel()
-    # defineix la mida de la finestra
-    f.geometry("500x400")
+    f.lift()
+    f.focus_force()
+    f.attributes("-topmost", True)
+    setup(f, "Habitacions", "580x480")
+    topbar(f, "Habitacions", icon="🛏️", back_cmd=f.destroy,
+           breadcrumbs=[("Manteniment", None), ("Habitacions", None)])
 
-    # permet escriure l'identificador de l'habitacio
-    ent = ctk.CTkEntry(f, placeholder_text="ID Habitació")
-    ent.pack(pady=10)
+    body = ctk.CTkFrame(f, fg_color=C["bg"], corner_radius=0)
+    body.pack(fill="both", expand=True, padx=20, pady=16)
 
-    # zona on es mostren els resultats
-    box = ctk.CTkTextbox(f, width=450, height=250)
-    box.pack()
+    c = mk_card(body)
+    c.pack(fill="x")
+    card_section(c, "Consulta per habitació", icon="🛏️")
+    e = field(c, "ID Habitació", "Introdueix l'identificador")
+    sl = status_lbl(c)
+
+    box = textbox(body, width=540, height=220)
+    box.pack(pady=(12, 0))
 
     def cercar():
-        # neteja el resultat anterior i carrega les dades de l'habitacio
         box.delete("1.0", "end")
-        # consulta les dades de l'habitacio indicada
-        res = consultes.consultar_opcional_habitacio(connectar(), ent.get())
-        for r in res:
-            # escriu cada registre trobat
-            box.insert("end", f"Pacient: {r['pacient']} | Entrada: {r['data_ingres']}\n")
+        try:
+            res = consultes.consultar_opcional_habitacio(connectar(), e.get().strip())
+            if not res:
+                ok(sl, "No hi ha ingressos actius per aquesta habitació"); return
+            ok(sl, f"✓  {len(res)} ingrés/os trobats")
+            for r in res:
+                box.insert("end", f"Pacient: {r.get('pacient','—')}  |  Entrada: {r.get('data_ingres','—')}\n")
+        except Exception as ex:
+            err(sl, str(ex))
 
-    # boto per executar la consulta
-    ctk.CTkButton(f, text="Consultar Opcional", command=cercar).pack()
+    btn_primary(c, "🔍  Consultar", cercar)

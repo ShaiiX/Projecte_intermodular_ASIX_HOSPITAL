@@ -5,7 +5,9 @@ from tkinter import messagebox
 import customtkinter as ctk
 from faker import Faker
 from psycopg2.extras import execute_values
-from db import connectar
+from db import connectar_generic
+from estil import *
+
 
 
 PACIENTS = 50000
@@ -35,87 +37,62 @@ TORNS = ["Mati", "Tarda", "Nit"]
 
 
 def menu_dummy_data():
-    # finestra del menu especific per generar o eliminar les dades de prova
-    finestra = ctk.CTkToplevel()
-    finestra.title("Dummy Data")
-    finestra.geometry("560x500")
-
-    # titol principal de la finestra
-    ctk.CTkLabel(
-        finestra,
-        text="Dummy Data",
-        font=("Arial", 24, "bold")
-    ).pack(pady=(25, 10))
-
-    # text breu amb la funcio de la pantalla
-    ctk.CTkLabel(
-        finestra,
-        text=(
-            "Genera les dades prova i els índexs necessaris. \n "
-            "Pots eliminar només la informació dummy creada aquí"
-        )
-    ).pack(pady=10)
-
-    # etiqueta per mostrar l'estat de la tasca actual
-    estat = ctk.CTkLabel(finestra, text="Preparat")
-    estat.pack(pady=(10, 8))
-
-    # caixa on es mostren els resultats de generar o eliminar dades
-    resultats = ctk.CTkTextbox(finestra, width=480, height=120)
-    resultats.pack(pady=(0, 15))
-    resultats.insert("1.0", "encara no hi ha resultats")
-    resultats.configure(state="disabled")
-
-    def mostrar_resultat(text):
-        # actualitza la caixa de resultats amb el missatge rebut
-        resultats.configure(state="normal")
-        resultats.delete("1.0", "end")
-        resultats.insert("1.0", text)
-        resultats.configure(state="disabled")
-
-    def executar(tasca, missatge):
-        # executem la tasca en segon pla perque la interficie no quedi congelada
+    f = ctk.CTkToplevel()
+    f.lift()
+    f.focus_force()
+    f.attributes("-topmost", True)
+    setup(f, "Dummy Data", "520x380")
+    topbar(f, "Dummy Data", icon="⚗️", back_cmd=f.destroy,
+           breadcrumbs=[("Manteniment", None), ("Dummy Data", None)])
+ 
+    body = ctk.CTkFrame(f, fg_color=C["bg"], corner_radius=0)
+    body.pack(fill="both", expand=True, padx=20, pady=16)
+ 
+    c = mk_card(body)
+    c.pack(fill="x")
+    card_section(c, "Gestió de dades de prova", icon="⚗️")
+ 
+    ctk.CTkLabel(c,
+        text="Genera les dades mínimes per provar el sistema,\n"
+             "o elimina les dades de prova creades anteriorment.",
+        font=F_SMALL, text_color=C["sub"], justify="left",
+    ).pack(anchor="w", padx=18, pady=(0, 8))
+ 
+    sl = status_lbl(c)
+ 
+    # Barra de progrés
+    bar = ctk.CTkProgressBar(c, width=460, height=8, corner_radius=4,
+                              fg_color=C["border"], progress_color=C["accent"])
+    bar.set(0)
+    bar.pack(padx=18, pady=(0, 14))
+ 
+    def executar(tasca, msg):
+        sl.configure(text=msg, text_color=C["amber"])
+        bar.start()
+ 
         def worker():
             try:
-                # actualitzem el missatge abans de comencar la feina
-                finestra.after(0, lambda: estat.configure(text=missatge))
-                finestra.after(0, lambda: mostrar_resultat(missatge))
                 resultat = tasca()
-                # avisem l'usuari quan la tasca acaba be
-                finestra.after(0, lambda: estat.configure(text="Acabat correctament"))
-                finestra.after(0, lambda: mostrar_resultat(resultat))
-                finestra.after(0, lambda: messagebox.showinfo("Dummy Data", resultat))
-            except Exception as exc:
-                # mostrem qualsevol error capturat durant el proces
-                finestra.after(0, lambda: estat.configure(text="Error"))
-                finestra.after(0, lambda error=exc: mostrar_resultat(f"error\n{error}"))
-                finestra.after(0, lambda error=exc: messagebox.showerror("Error", str(error)))
-
-        # el fil daemon es tanca automaticament amb l'aplicacio
+                f.after(0, lambda: bar.stop())
+                f.after(0, lambda: bar.set(1))
+                f.after(0, lambda: ok(sl, f"✓  {resultat}"))
+                f.after(0, lambda: messagebox.showinfo("Completat", resultat))
+            except Exception as ex:
+                f.after(0, lambda: bar.stop())
+                f.after(0, lambda: err(sl, str(ex)))
+                f.after(0, lambda: messagebox.showerror("Error", str(ex)))
+ 
         threading.Thread(target=worker, daemon=True).start()
-
-    # boto per omplir la base de dades amb registres ficticis
-    ctk.CTkButton(
-        finestra,
-        text="Generar dummy data",
-        width=300,
-        command=lambda: executar(generar_dummy_data, "Generant dades... pot trigar uns minuts")
-    ).pack(pady=10)
-
-    # boto per eliminar nomes els registres creats per aquest modul
-    ctk.CTkButton(
-        finestra,
-        text="Eliminar dummy data",
-        width=300,
-        fg_color="#b91c1c",
-        hover_color="#7f1d1d",
-        command=lambda: executar(eliminar_dummy_data, "Eliminant dades dummy...")
-    ).pack(pady=10)
-
+ 
+    btn_primary(c, "▶  Generar dummy data", width=460,
+                cmd=lambda: executar(generar_dummy_data, "Generant dades... pot trigar uns minuts"))
+    btn_danger(c, "🗑  Eliminar dummy data", width=460,
+               cmd=lambda: executar(eliminar_dummy_data, "Eliminant dades de prova..."))
+ 
 
 def generar_dummy_data():
     # connexio principal a postgresql per carregar totes les dades ficticies
-    conn = connectar()
+    conn = connectar_generic()
     # si no hi ha connexio aturem el proces abans de tocar dades
     if conn is None:
         raise RuntimeError("No s'ha pogut connectar a la base de dades")
@@ -171,7 +148,7 @@ def generar_dummy_data():
 
 def eliminar_dummy_data():
     # elimina nomes les dades registrades a dummy_data ids
-    conn = connectar()
+    conn = connectar_generic()
     # sense connexio no es pot fer la neteja
     if conn is None:
         raise RuntimeError("No s'ha pogut connectar a la base de dades")
@@ -382,7 +359,6 @@ def _crear_pacients(cur, run_id):
             f"pacient.{i:05d}@dummy.hospital.local",
             _data_naixement(0, 96),
             f"TS-DMY-{i:08d}",
-            None
         ))
 
     # insercio massiva de pacients i retorn dels ids creats
@@ -390,7 +366,7 @@ def _crear_pacients(cur, run_id):
         cur,
         """
         INSERT INTO pacient.pacient
-        (nom, cognoms, dni, telefon, email, data_naixement, tarjeta_sanitaria, id_habitacio)
+        (nom, cognoms, dni, telefon, email, data_naixement, tarjeta_sanitaria)
         VALUES %s
         RETURNING id_pacient
         """,

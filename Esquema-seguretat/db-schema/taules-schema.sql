@@ -143,7 +143,6 @@ CREATE TABLE pacient.PACIENT(
     email VARCHAR(100),
     data_naixement DATE,
     tarjeta_sanitaria VARCHAR(30) UNIQUE,
-    id_habitacio INT REFERENCES estructura.HABITACIO(id_habitacio)
 );
 
 CREATE TABLE pacient.EXPEDIENT(
@@ -190,7 +189,8 @@ CREATE TABLE pacient.INGRES(
     id_pacient INT REFERENCES pacient.PACIENT(id_pacient),
     data_ingres DATE,
     data_sortida_prevista DATE,
-    data_sortida_real DATE
+    data_sortida_real DATE,
+    id_habitacio INT REFERENCES estructura.HABITACIO(id_habitacio)
 );
 
 

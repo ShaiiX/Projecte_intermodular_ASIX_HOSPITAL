@@ -1,35 +1,42 @@
 import customtkinter as ctk
 from db import connectar
 import consultes
+from estil import *
 
 
 def menu_historial():
-    # consulta l'historial resumit d'un pacient
     f = ctk.CTkToplevel()
-    # defineix la mida de la finestra
-    f.geometry("500x400")
+    f.lift()
+    f.focus_force()
+    f.attributes("-topmost", True)
+    setup(f, "Historial Pacient", "580x460")
+    topbar(f, "Historial Pacient", icon="📂", back_cmd=f.destroy,
+           breadcrumbs=[("Manteniment", None), ("Historial", None)])
 
-    # camp per introduir l'id del pacient
-    ent = ctk.CTkEntry(f, placeholder_text="ID Pacient")
-    ent.pack(pady=10)
+    body = ctk.CTkFrame(f, fg_color=C["bg"], corner_radius=0)
+    body.pack(fill="both", expand=True, padx=20, pady=16)
 
-    # caixa de text amb la resposta
-    box = ctk.CTkTextbox(f, width=450, height=250)
-    box.pack()
+    c = mk_card(body)
+    c.pack(fill="x")
+    card_section(c, "Historial del pacient", icon="📂")
+    e = field(c, "ID Pacient", "Introdueix l'identificador")
+    sl = status_lbl(c)
+
+    box = textbox(body, width=540, height=200)
+    box.pack(pady=(12, 0))
 
     def cercar():
-        # mostra el nombre de visites i diagnostics del pacient
         box.delete("1.0", "end")
-        # recupera el resum de l'historial
-        r = consultes.consultar_opcional_historial(connectar(), ent.get())
-        if r:
-            # mostra el resum en diverses linies
-            box.insert(
-                "end",
-                f"PACIENT: {r['nom']} {r['cognoms']}\n"
-                f"Visites: {r['total_visites']}\n"
-                f"Diagnostics: {r['diagnostics']}"
-            )
+        try:
+            r = consultes.consultar_opcional_historial(connectar(), e.get().strip())
+            if not r:
+                err(sl, "Pacient no trobat"); return
+            ok(sl, f"✓  Historial de {r.get('nom','')} {r.get('cognoms','')}")
+            box.insert("end",
+                f"Pacient:     {r.get('nom','')} {r.get('cognoms','')}\n"
+                f"Visites:     {r.get('total_visites','—')}\n"
+                f"Diagnòstics: {r.get('diagnostics','—')}\n")
+        except Exception as ex:
+            err(sl, str(ex))
 
-    # boto per carregar l'historial
-    ctk.CTkButton(f, text="Veure Historial", command=cercar).pack()
+    btn_primary(c, "🔍  Veure historial", cercar)

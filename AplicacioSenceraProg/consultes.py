@@ -33,7 +33,7 @@ def check_dependencia_infermeria(conn, id_inf):
 
 def alta_pacient_db(conn, d):
     with conn.cursor() as cur:
-        cur.execute("INSERT INTO pacient.PACIENT (nom, cognoms, telefon, email, dni, data_naixament, tarjeta_sanitaria) VALUES (%s,%s,%s,%s,%s,%s,%s)", d)
+        cur.execute("INSERT INTO pacient.PACIENT (nom, cognoms, telefon, email, dni, data_naixement, tarjeta_sanitaria) VALUES (%s,%s,%s,%s,%s,%s,%s)", d)
         conn.commit()
 
 def alta_personal_db(conn, dades_comuns, tipus, dades_especifiques, asignat):

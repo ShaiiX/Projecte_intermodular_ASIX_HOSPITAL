@@ -162,7 +162,6 @@ def login():    # funció que s'executa quan clica el botó de login
 
         status_label.configure(text="Login correcte", text_color="green")
 
-        funcions.guardar_login_fitxer(nom_usuari, contrasenya)
         app.withdraw()
         menu.obrir_menu(resultat)
 
