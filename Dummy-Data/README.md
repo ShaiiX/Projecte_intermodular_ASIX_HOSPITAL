@@ -87,9 +87,6 @@ S’han creat índexs en les taules més importants per millorar el rendiment de
 | psycopg2 | Connexió amb Postgres |
 | customtkinter | Opció de menú dins l'aplicació |
 
-
----
-
 ---
 
 Instal·lació:
