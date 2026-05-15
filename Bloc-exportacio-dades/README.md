@@ -39,7 +39,6 @@ També es permet exportar les dades en format JSON
 - Format lleuger
 - Fàcil de llegir
 - Compatible amb PowerBI
-- Compatible amb altres aplicacions
 
 També es generen indentats per facilitar la lectura. Creació d'un JSON schema per validar l’estructura del document.
 
@@ -50,7 +49,7 @@ Per garantir que els fitxers exportats siguin correctes.
 - XML: validació XSD
 - JSON: validació amb JSON schema
 
----
+
 
 # Dashboard PowerBI
 
@@ -91,8 +90,8 @@ Es mostra un gràfic amb el detall de visites segons l’especialitat mèdica. P
 
 ## Funcionament
 
-1. Postgres guarda les dades de les visites.
-2. Les dades s’exporten des de l’aplicació.
-3. Powerbi importa aquestes dades.
-4. El dashboard genera els gràfics automàticament.
+1. Postgres guarda les dades de les visites
+2. Les dades s’exporten des de l’aplicació
+3. Powerbi importa aquestes dades
+4. El dashboard genera els gràfics automàticament
 
