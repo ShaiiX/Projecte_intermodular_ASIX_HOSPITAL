@@ -11,7 +11,7 @@ SELECT
      JOIN dades_per.PERSONAL p_inf ON io.id_infermer = p_inf.id_personal
      WHERE io.id_operacio = o.id_operacio) AS equip_infermeria
 FROM pacient.OPERACIO o
-JOIN estructura.QUIROFAN q ON o.id_quirofan = q.id_quirofan
+JOIN estructura.QUIROFAN q ON o.num_quirofan = q.num_quirofan and o.id_planta = q.id_planta
 JOIN pacient.PACIENT p ON o.id_pacient = p.id_pacient
 JOIN dades_per.METGE m ON o.id_metge = m.id_personal
 JOIN dades_per.PERSONAL p_met ON m.id_personal = p_met.id_personal;

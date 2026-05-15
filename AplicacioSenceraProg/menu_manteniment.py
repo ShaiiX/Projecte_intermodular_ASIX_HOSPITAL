@@ -1,103 +1,602 @@
 import customtkinter as ctk
-from estil import C, F_TITLE, F_CARD, F_SMALL, font, setup, topbar
+from tkinter import messagebox
+from tkcalendar import DateEntry
+from datetime import date
+from db import connectar
+import consultes
 
-from moduls.alta_personal import menu_alta_personal
-from moduls.alta_pacient import menu_alta_pacient
-from moduls.dependencia import menu_dependencia
-from moduls.operacions import menu_operacions
-from moduls.visites import menu_visites
-from moduls.inventari import menu_inventari
-from moduls.habitacio import menu_habitacio
-from moduls.historial import menu_historial
-from moduls.programacio_metges import menu_programacio_metges
-from moduls.informes import menu_informes
-from moduls.dummy_data import menu_dummy_data
+# ── Paleta ────────────────────────────────────────────────────────────────────
+BG      = "#0d1422"
+SIDEBAR = "#0a1120"
+CARD    = "#131f32"
+CARD2   = "#162236"
+BORDER  = "#1f2d44"
+BORDER2 = "#2a3a5c"
+ACCENT  = "#3b82f6"
+ACCH    = "#2563eb"
+TEAL    = "#06b6d4"
+GREEN   = "#10b981"
+AMBER   = "#f59e0b"
+PURPLE  = "#a78bfa"
+DANGER  = "#f87171"
+DANGERH = "#dc2626"
+TEXT    = "#f0f4ff"
+TEXT2   = "#e0e8ff"
+SUB     = "#8ca0c4"
+MUTED   = "#4a6080"
+
+# ── Helpers de widgets ────────────────────────────────────────────────────────
+def _lbl(parent, text, size=12, bold=False, color=None, **kw):
+    return ctk.CTkLabel(parent, text=text, text_color=color or TEXT2,
+                        font=("Arial", size, "bold" if bold else "normal"), **kw)
+
+def _entry(parent, placeholder="", show=None, width=340):
+    kw = dict(placeholder_text=placeholder, width=width, height=36,
+              corner_radius=7, fg_color=SIDEBAR, border_color=BORDER2,
+              text_color=TEXT2, placeholder_text_color=MUTED,
+              font=("Arial", 12))
+    if show: kw["show"] = show
+    return ctk.CTkEntry(parent, **kw)
+
+def _btn(parent, text, cmd, color=ACCENT, hover=ACCH, width=320):
+    return ctk.CTkButton(parent, text=text, command=cmd,
+                         fg_color=color, hover_color=hover,
+                         width=width, height=38, corner_radius=8,
+                         font=("Arial", 12, "bold"), text_color="#ffffff")
+
+def _btn_danger(parent, text, cmd, width=320):
+    return _btn(parent, text, cmd, color=DANGER, hover=DANGERH, width=width)
+
+def _sep(parent):
+    ctk.CTkFrame(parent, fg_color=BORDER, height=1).pack(fill="x", padx=16, pady=(8, 10))
+
+def _section(parent, text, icon=""):
+    f = ctk.CTkFrame(parent, fg_color="transparent")
+    f.pack(fill="x", padx=16, pady=(14, 0))
+    _lbl(f, f"{icon}  {text}" if icon else text, size=13, bold=True, color=SUB).pack(side="left")
+    _sep(parent)
+
+def _field(parent, label, placeholder="", show=None, width=340):
+    _lbl(parent, label, size=11, color=MUTED).pack(anchor="w", padx=16, pady=(6, 0))
+    e = _entry(parent, placeholder, show, width)
+    e.pack(padx=16, pady=(2, 0))
+    return e
+
+def _status(parent):
+    l = ctk.CTkLabel(parent, text="", font=("Arial", 11),
+                     text_color=GREEN, wraplength=400, justify="left")
+    l.pack(anchor="w", padx=16, pady=(6, 12))
+    return l
+
+def _ok(lbl, msg="✓  Operació completada"):
+    lbl.configure(text=msg, text_color=GREEN)
+
+def _err(lbl, msg):
+    lbl.configure(text=f"✗  {msg}", text_color=DANGER)
+
+def _textbox(parent, width=500, height=220):
+    return ctk.CTkTextbox(parent, width=width, height=height,
+                          fg_color=SIDEBAR, text_color=TEXT2,
+                          font=("Courier New", 11), corner_radius=8,
+                          border_width=1, border_color=BORDER)
+
+def _cal(parent):
+    return DateEntry(parent, date_pattern="yyyy-mm-dd",
+                     background=CARD, foreground=TEXT2,
+                     borderwidth=1, relief="flat",
+                     selectbackground=ACCENT, font=("Arial", 11))
 
 
+# ── Panells de contingut ──────────────────────────────────────────────────────
+
+def _panel_alta_pacient(parent):
+    scroll = ctk.CTkFrame(parent, fg_color="transparent", corner_radius=0)
+    scroll.pack(fill="both", expand=True)
+
+    _lbl(scroll, "Alta Pacient", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+    _lbl(scroll, "Registra un nou pacient al sistema", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 8))
+
+    card = ctk.CTkFrame(scroll, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    card.pack(fill="x", padx=16, pady=(0, 16))
+    _section(card, "Dades del pacient", "👤")
+
+    camps = [("Nom", "Nom del pacient"), ("Cognoms", "Cognoms complets"),
+             ("Telèfon", "Ex: 612 345 678"), ("Email", "exemple@correu.cat"),
+             ("DNI", "Ex: 12345678A"), ("Data Naixement", "YYYY-MM-DD"),
+             ("Targeta Sanitària", "Ex: XXXX1234567890")]
+    entries = [_field(card, lbl, ph) for lbl, ph in camps]
+    sl = _status(card)
+
+    def guardar():
+        vals = [e.get().strip() for e in entries]
+        if any(v == "" for v in vals):
+            _err(sl, "Tots els camps són obligatoris"); return
+        try:
+            conn = connectar()
+            consultes.alta_pacient_db(conn, vals)
+            conn.close()
+            _ok(sl, "✓  Pacient donat d'alta correctament")
+            for e in entries: e.delete(0, "end")
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(card, "💾  Guardar pacient", guardar).pack(padx=16, pady=(4, 16))
+
+
+def _panel_alta_personal(parent):
+    _TIPUS_CAMPS = {
+        "Metge":               [("Especialitat","Ex: Cardiologia"),("Currículum","Resum professional"),("Núm. Col·legiat","COL-12345")],
+        "Infermer Planta":     [("Torn (M/T/N)","M=Matí T=Tarda N=Nit"),("Anys Experiència","Ex: 5"),("ID Planta","Num. planta")],
+        "Infermer Metge":      [("Torn (M/T/N)","M=Matí T=Tarda N=Nit"),("Anys Experiència","Ex: 5"),("ID Metge","ID del metge")],
+        "Vari/Administratiu":  [("Tipus Feina","Ex: Neteja"),("Horari","Ex: Dl-Dv 08-15h")],
+    }
+    _TIPUS_KEY = {
+        "Metge":"metge","Infermer Planta":"infermer_planta",
+        "Infermer Metge":"infermer_metge","Vari/Administratiu":"vari",
+    }
+
+    scroll = ctk.CTkFrame(parent, fg_color="transparent", corner_radius=0)
+    scroll.pack(fill="both", expand=True)
+
+    _lbl(scroll, "Alta Personal", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+    _lbl(scroll, "Registra nou personal mèdic o administratiu", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 8))
+
+    cols = ctk.CTkFrame(scroll, fg_color="transparent")
+    cols.pack(fill="x", padx=16)
+    cols.columnconfigure(0, weight=1)
+    cols.columnconfigure(1, weight=1)
+
+    # Columna esquerra
+    c_esq = ctk.CTkFrame(cols, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    c_esq.grid(row=0, column=0, padx=(0, 6), sticky="nsew")
+    _section(c_esq, "Dades personals", "👤")
+    comuns_defs = [
+        ("Nom","Nom"),("Cognom 1","Primer cognom"),("Cognom 2","Segon cognom"),
+        ("DNI","12345678A"),("Data Naix. (YYYY-MM-DD)","1985-03-21"),
+        ("Telèfon","612 345 678"),("Email","correu@hospital.cat"),("Adreça","Carrer, núm..."),
+    ]
+    entries_comuns = [_field(c_esq, lbl, ph, width=260) for lbl, ph in comuns_defs]
+
+    # Columna dreta
+    c_drt = ctk.CTkFrame(cols, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    c_drt.grid(row=0, column=1, padx=(6, 0), sticky="nsew")
+    _section(c_drt, "Tipus de personal", "🩺")
+
+    tipus_var = ctk.StringVar(value="Metge")
+    _lbl(c_drt, "Categoria", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 2))
+    ctk.CTkOptionMenu(c_drt, values=list(_TIPUS_CAMPS.keys()), variable=tipus_var,
+                      width=260, height=36, corner_radius=7,
+                      fg_color=SIDEBAR, button_color=ACCENT, button_hover_color=ACCH,
+                      dropdown_fg_color=CARD, text_color=TEXT2,
+                      font=("Arial", 12)).pack(padx=16, pady=(0, 6))
+
+    extra_frame = ctk.CTkFrame(c_drt, fg_color="transparent")
+    extra_frame.pack(fill="x")
+    extra_entries = []
+
+    def rebuild(*_):
+        for w in extra_frame.winfo_children(): w.destroy()
+        extra_entries.clear()
+        for lbl, ph in _TIPUS_CAMPS.get(tipus_var.get(), []):
+            extra_entries.append(_field(extra_frame, lbl, ph, width=260))
+
+    tipus_var.trace_add("write", rebuild)
+    rebuild()
+
+    sl = _status(scroll)
+
+    def guardar():
+        comuns = [e.get().strip() for e in entries_comuns]
+        extras = [e.get().strip() for e in extra_entries]
+        if any(v == "" for v in comuns + extras):
+            _err(sl, "Tots els camps són obligatoris"); return
+        try:
+            conn = connectar()
+            res = consultes.alta_personal_db(conn, comuns, _TIPUS_KEY[tipus_var.get()], extras)
+            conn.close()
+            _ok(sl, f"✓  Personal donat d'alta (ID {res})")
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(scroll, "💾  Guardar personal", guardar).pack(padx=16, pady=(8, 16))
+
+
+def _panel_dependencia(parent):
+    _lbl(parent, "Dependència Infermeria", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+    _lbl(parent, "Comprova a quin metge o planta està assignat un infermer", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 8))
+
+    card = ctk.CTkFrame(parent, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    card.pack(fill="x", padx=16)
+    _section(card, "Verificar assignació", "🔗")
+    e = _field(card, "ID Infermer/a", "Introdueix l'identificador")
+    sl = _status(card)
+
+    def check():
+        try:
+            conn = connectar()
+            res = consultes.check_dependencia_infermeria(conn, e.get().strip())
+            conn.close()
+            if res:
+                if res["es_metge"]:
+                    dep = "Metge"
+                elif res["es_planta"]:
+                    dep = "Planta"
+                else:
+                    dep = "Cap Lloc"
+                _ok(sl, f"✓  {res['nom']} {res['cognom1']} → assignat/da a {dep}")
+            else:
+                _err(sl, "No s'ha trobat cap resultat")
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(card, "🔍  Verificar", check).pack(padx=16, pady=(4, 16))
+
+
+def _panel_operacions(parent):
+    _lbl(parent, "Operacions per dia", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+
+    card = ctk.CTkFrame(parent, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    card.pack(fill="x", padx=16)
+    _section(card, "Selecciona data", "🔪")
+    _lbl(card, "Data", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 2))
+    cal = _cal(card)
+    cal.pack(padx=16, anchor="w", pady=(0, 4))
+    sl = _status(card)
+
+    box = _textbox(parent, height=200)
+    box.pack(padx=16, pady=(8, 16), fill="x")
+
+    def executar():
+        box.delete("1.0", "end")
+        box.insert("end", f"{'Hora':<12}{'Quiròfan':<18}{'Pacient'}\n{'─'*60}\n")
+        try:
+            conn = connectar()
+            dades = consultes.carregar_operacions_dia(conn, cal.get_date())
+            conn.close()
+            for r in dades:
+                box.insert("end", f"{str(r.get('hora','')):<12}{str(r.get('quirofan','')):<18}{r.get('pacient','')}\n")
+            _ok(sl, f"✓  {len(dades)} operacions trobades")
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(card, "🔍  Consultar operacions", executar).pack(padx=16, pady=(0, 16))
+
+
+def _panel_visites(parent):
+    _lbl(parent, "Visites per dia", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+
+    card = ctk.CTkFrame(parent, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    card.pack(fill="x", padx=16)
+    _section(card, "Selecciona data", "📋")
+    _lbl(card, "Data", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 2))
+    cal = _cal(card)
+    cal.pack(padx=16, anchor="w", pady=(0, 4))
+    sl = _status(card)
+
+    box = _textbox(parent, height=200)
+    box.pack(padx=16, pady=(8, 16), fill="x")
+
+    def executar():
+        box.delete("1.0", "end")
+        box.insert("end", f"{'Hora':<12}{'Pacient':<28}{'Metge'}\n{'─'*60}\n")
+        try:
+            conn = connectar()
+            dades = consultes.carregar_visites_del_dia(conn, cal.get_date())
+            conn.close()
+            for r in dades:
+                box.insert("end", f"{str(r.get('hora_entrada','')):<12}{str(r.get('pacient','')):<28}{r.get('metge','')}\n")
+            _ok(sl, f"✓  {len(dades)} visites trobades")
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(card, "🔍  Consultar visites", executar).pack(padx=16, pady=(0, 16))
+
+
+def _panel_inventari(parent):
+    _lbl(parent, "Inventari Aparells", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+    sl = ctk.CTkLabel(parent, text="Carregant...", font=("Arial", 11), text_color=MUTED)
+    sl.pack(anchor="w", padx=16, pady=(0, 6))
+
+    box = _textbox(parent, height=300)
+    box.pack(padx=16, fill="x")
+    box.insert("end", f"{'Quiròfan':<12}{'Aparell':<26}{'Marca':<18}{'Quantitat'}\n{'─'*68}\n")
+
+    try:
+        conn = connectar()
+        res = consultes.consultar_inventari(conn)
+        conn.close()
+        for r in res:
+            box.insert("end", f"{str(r.get('num_quirofan','')):<12}{str(r.get('nom_aparell','')):<26}{str(r.get('marca','')):<18}{r.get('quantitat','')}\n")
+        _ok(sl, f"✓  {len(res)} registres carregats")
+    except Exception as ex:
+        _err(sl, str(ex))
+
+
+def _panel_habitacio(parent):
+    _lbl(parent, "Habitacions", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+
+    card = ctk.CTkFrame(parent, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    card.pack(fill="x", padx=16)
+    _section(card, "Consulta per habitació", "🛏️")
+    e = _field(card, "ID Habitació", "Introdueix l'identificador")
+    sl = _status(card)
+
+    box = _textbox(parent, height=200)
+    box.pack(padx=16, pady=(8, 16), fill="x")
+
+    def cercar():
+        box.delete("1.0", "end")
+        try:
+            res = consultes.consultar_opcional_habitacio(connectar(), e.get().strip())
+            if not res:
+                _ok(sl, "No hi ha ingressos actius"); return
+            _ok(sl, f"✓  {len(res)} ingrés/os trobats")
+            for r in res:
+                box.insert("end", f"Pacient: {r.get('pacient','—')}  |  Entrada: {r.get('data_ingres','—')}\n")
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(card, "🔍  Consultar", cercar).pack(padx=16, pady=(4, 16))
+
+
+def _panel_historial(parent):
+    _lbl(parent, "Historial Pacient", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+
+    card = ctk.CTkFrame(parent, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    card.pack(fill="x", padx=16)
+    _section(card, "Cerca per pacient", "📂")
+    e = _field(card, "ID Pacient", "Introdueix l'identificador")
+    sl = _status(card)
+
+    box = _textbox(parent, height=180)
+    box.pack(padx=16, pady=(8, 16), fill="x")
+
+    def cercar():
+        box.delete("1.0", "end")
+        try:
+            r = consultes.consultar_opcional_historial(connectar(), e.get().strip())
+            if not r:
+                _err(sl, "Pacient no trobat"); return
+            _ok(sl, f"✓  Historial carregat")
+            box.insert("end",
+                f"Pacient:     {r.get('nom','')} {r.get('cognoms','')}\n"
+                f"Visites:     {r.get('total_visites','—')}\n"
+                f"Diagnòstics: {r.get('diagnostics','—')}\n")
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(card, "🔍  Veure historial", cercar).pack(padx=16, pady=(4, 16))
+
+
+def _panel_programacio(parent):
+    _lbl(parent, "Programació Metges", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+    sl = ctk.CTkLabel(parent, text="", font=("Arial", 11), text_color=MUTED)
+    sl.pack(anchor="w", padx=16, pady=(0, 6))
+
+    box = _textbox(parent, height=280)
+    box.pack(padx=16, fill="x")
+
+    def cargar():
+        box.delete("1.0", "end")
+        box.insert("end", f"{'Metge':<28}{'Visites':<12}{'Operacions'}\n{'─'*56}\n")
+        try:
+            conn = connectar()
+            dades = consultes.consultar_programacio_metge(conn)
+            conn.close()
+            if not dades:
+                box.insert("end", "No hi ha dades disponibles.\n")
+            else:
+                for m in dades:
+                    nom = f"{m.get('nom','')} {m.get('cognom1','')}"
+                    box.insert("end", f"{nom:<28}{str(m.get('total_visites','0')):<12}{m.get('total_operacions','0')}\n")
+            _ok(sl, f"✓  {len(dades) if dades else 0} metges carregats")
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(parent, "🔄  Actualitzar", cargar, width=200).pack(padx=16, pady=(8, 0), anchor="w")
+    cargar()
+
+
+def _panel_informes(parent):
+    _lbl(parent, "Informes", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+
+    conn = connectar()
+
+    # Botons selector
+    btn_row = ctk.CTkFrame(parent, fg_color="transparent")
+    btn_row.pack(fill="x", padx=16, pady=(0, 10))
+    active_btn = [None]
+
+    box = _textbox(parent, height=300)
+    box.pack(padx=16, fill="x")
+
+    def _activate(b, cmd):
+        if active_btn[0]:
+            active_btn[0].configure(fg_color=CARD, text_color=SUB, border_color=BORDER)
+        b.configure(fg_color=CARD2, text_color=ACCENT, border_color=ACCENT)
+        active_btn[0] = b
+        cmd()
+
+    def _show_rows(rows):
+        box.delete("1.0", "end")
+        for k, v in rows:
+            box.insert("end", f"{k:<26}{v}\n")
+
+    def informe_planta():
+        try:
+            d = consultes.informe_planta(conn, 1)
+            _show_rows([("Planta", d.get("nom_planta","—")),("Habitacions",str(d.get("total_habitacions","—"))),
+                        ("Quiròfans",str(d.get("total_quirofans","—"))),("Infermeria",str(d.get("total_infermeria","—")))])
+        except Exception as ex: _show_rows([("Error", str(ex))])
+
+    def informe_personal():
+        try:
+            dades = consultes.informe_personal(conn)
+            box.delete("1.0", "end")
+            box.insert("end", f"{'ID':<6}{'Nom':<26}{'Telèfon':<16}{'Email'}\n{'─'*72}\n")
+            for p in dades:
+                box.insert("end", f"{str(p.get('id_personal','')):<6}{p.get('nom','')+' '+p.get('cognom1',''):<26}{str(p.get('telefon','')):<16}{p.get('email','')}\n")
+        except Exception as ex: _show_rows([("Error", str(ex))])
+
+    def informe_visites():
+        try:
+            d = consultes.informe_visites_dia(conn, date.today().isoformat())
+            _show_rows([("Total visites avui", str(d.get("total_visites","—")))])
+        except Exception as ex: _show_rows([("Error", str(ex))])
+
+    def ranking():
+        try:
+            dades = consultes.ranking_metges(conn)
+            box.delete("1.0", "end")
+            box.insert("end", f"{'#':<4}{'Metge':<28}{'Visites'}\n{'─'*46}\n")
+            for i, m in enumerate(dades, 1):
+                box.insert("end", f"{i:<4}{m.get('nom','')+' '+m.get('cognom1',''):<28}{m.get('total_visites','0')}\n")
+        except Exception as ex: _show_rows([("Error", str(ex))])
+
+    btns_def = [("🏢  Planta", informe_planta),("👥  Personal", informe_personal),
+                ("📋  Visites avui", informe_visites),("🏆  Rànquing", ranking)]
+
+    first = None
+    for text, cmd in btns_def:
+        b = ctk.CTkButton(btn_row, text=text, width=0, height=32,
+                          fg_color=CARD, hover_color=CARD2, text_color=SUB,
+                          border_color=BORDER, border_width=1,
+                          corner_radius=7, font=("Arial", 11),
+                          command=lambda b2=None, c=cmd: _activate(b2, c))
+        # necessitem la referència al botó dins del command
+        b.configure(command=lambda b2=b, c=cmd: _activate(b2, c))
+        b.pack(side="left", padx=(0, 6))
+        if first is None: first = (b, cmd)
+
+    if first: _activate(first[0], first[1])
+
+
+def _panel_dummy(parent):
+    import threading
+
+    _lbl(parent, "Dummy Data", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+    _lbl(parent, "Genera o elimina les dades de prova del sistema", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 8))
+
+    card = ctk.CTkFrame(parent, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    card.pack(fill="x", padx=16)
+    _section(card, "Gestió de dades de prova", "⚗️")
+
+    sl = _status(card)
+    bar = ctk.CTkProgressBar(card, width=460, height=6, corner_radius=4,
+                              fg_color=BORDER, progress_color=ACCENT)
+    bar.set(0)
+    bar.pack(padx=16, pady=(0, 10))
+
+    def executar(tasca_nom, msg):
+        _ok(sl, msg)
+        sl.configure(text_color=AMBER)
+        bar.start()
+
+        def worker():
+            try:
+                from moduls.dummy_data import generar_dummy_data, eliminar_dummy_data
+                tasca = generar_dummy_data if tasca_nom == "generar" else eliminar_dummy_data
+                resultat = tasca()
+                parent.after(0, lambda: bar.stop())
+                parent.after(0, lambda: bar.set(1))
+                parent.after(0, lambda: _ok(sl, f"✓  {resultat}"))
+            except Exception as ex:
+                parent.after(0, lambda: bar.stop())
+                parent.after(0, lambda: _err(sl, str(ex)))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    _btn(card, "▶  Generar dummy data", lambda: executar("generar", "Generant..."), width=440).pack(padx=16, pady=(0, 6))
+    _btn_danger(card, "🗑  Eliminar dummy data", lambda: executar("eliminar", "Eliminant..."), width=440).pack(padx=16, pady=(0, 16))
+
+
+# ── Mapa de mòduls ────────────────────────────────────────────────────────────
 _MODULS = [
-    ("Alta Pacient",          "👤", C["accent"],  menu_alta_pacient),
-    ("Alta Personal",         "🩺", C["teal"],    menu_alta_personal),
-    ("Dependència",           "🔗", C["purple"],  menu_dependencia),
-    ("Operacions per dia",    "🔪", C["amber"],   menu_operacions),
-    ("Visites per dia",       "📋", C["green"],   menu_visites),
-    ("Inventari Aparells",    "🏥", C["teal"],    menu_inventari),
-    ("Habitacions",           "🛏️", C["accent"],  menu_habitacio),
-    ("Historial Pacient",     "📂", C["purple"],  menu_historial),
-    ("Programació Metges",    "📅", C["amber"],   menu_programacio_metges),
-    ("Informes",              "📊", C["green"],   menu_informes),
-    ("Dummy Data",            "⚗️",  C["danger"],  menu_dummy_data),
+    ("Alta Pacient",        "👤", ACCENT,  _panel_alta_pacient),
+    ("Alta Personal",       "🩺", TEAL,    _panel_alta_personal),
+    ("Dependència",         "🔗", PURPLE,  _panel_dependencia),
+    ("Operacions",          "🔪", AMBER,   _panel_operacions),
+    ("Visites",             "📋", GREEN,   _panel_visites),
+    ("Inventari",           "🏥", TEAL,    _panel_inventari),
+    ("Habitacions",         "🛏️", ACCENT,  _panel_habitacio),
+    ("Historial Pacient",   "📂", PURPLE,  _panel_historial),
+    ("Prog. Metges",        "📅", AMBER,   _panel_programacio),
+    ("Informes",            "📊", GREEN,   _panel_informes),
+    ("Dummy Data",          "⚗️",  DANGER,  _panel_dummy),
 ]
 
 
+# ── Finestra principal ─────────────────────────────────────────────────────────
 def obrir_manteniment():
-    f = ctk.CTkToplevel()
-    f.lift()
-    f.focus_force()
-    f.attributes("-topmost", True)
-    setup(f, "Bloc de Manteniment", "620x640")
+    ctk.set_appearance_mode("dark")
+    win = ctk.CTkToplevel()
+    win.title("Bloc de Manteniment")
+    win.geometry("1100x680")
+    win.minsize(900, 560)
+    win.configure(fg_color=BG)
+    win.lift()
+    win.focus_force()
 
-    topbar(f, "Manteniment", icon="⚙️")
+    # ── Topbar ────────────────────────────────────────────────────────────
+    topbar = ctk.CTkFrame(win, fg_color="#0a1120", corner_radius=0, height=52)
+    topbar.pack(fill="x")
+    topbar.pack_propagate(False)
+    _lbl(topbar, "⚙️  Bloc de Manteniment", size=17, bold=True).pack(side="left", padx=20, pady=14)
+    ctk.CTkButton(topbar, text="✕  Tancar", command=win.destroy,
+                  fg_color="transparent", hover_color=CARD2,
+                  text_color=MUTED, border_color=BORDER2, border_width=1,
+                  width=90, height=30, corner_radius=7,
+                  font=("Arial", 11)).pack(side="right", padx=16, pady=11)
 
-    body = ctk.CTkScrollableFrame(f, fg_color=C["bg"], corner_radius=0)
-    body.pack(fill="both", expand=True, padx=0, pady=0)
+    # ── Layout principal: sidebar + contingut ─────────────────────────────
+    main = ctk.CTkFrame(win, fg_color="transparent")
+    main.pack(fill="both", expand=True)
 
-    # Títol
-    ctk.CTkLabel(body, text="Selecciona una funcionalitat",
-                 font=font(18, bold=True), text_color=C["text"]).pack(
-        anchor="w", padx=24, pady=(20, 4))
-    ctk.CTkLabel(body, text="OPCIONS DISPONIBLES",
-                 font=font(10, bold=True), text_color=C["muted"]).pack(
-        anchor="w", padx=24, pady=(0, 12))
+    # Sidebar
+    sidebar = ctk.CTkFrame(main, fg_color=SIDEBAR, corner_radius=0, width=200,
+                           border_width=0)
+    sidebar.pack(side="left", fill="y")
+    sidebar.pack_propagate(False)
 
-    # Grid 2 columnes
-    grid = ctk.CTkFrame(body, fg_color="transparent")
-    grid.pack(fill="x", padx=16, pady=(0, 24))
-    grid.columnconfigure(0, weight=1)
-    grid.columnconfigure(1, weight=1)
+    ctk.CTkLabel(sidebar, text="MÒDULS", font=("Arial", 9, "bold"),
+                 text_color=MUTED).pack(anchor="w", padx=16, pady=(16, 6))
 
-    for i, (nom, icon, color, cmd) in enumerate(_MODULS):
-        row, col = divmod(i, 2)
-        _modul_card(grid, nom, icon, color, cmd, row=row, col=col)
+    # Àrea de contingut
+    content_wrapper = ctk.CTkFrame(main, fg_color=BG, corner_radius=0)
+    content_wrapper.pack(side="left", fill="both", expand=True)
 
-    # Si imparell, afegir cel·la buida
-    if len(_MODULS) % 2:
-        empty = ctk.CTkFrame(grid, fg_color="transparent")
-        empty.grid(row=len(_MODULS) // 2, column=1, padx=6, pady=6, sticky="nsew")
+    content_area = ctk.CTkScrollableFrame(content_wrapper, fg_color=BG, corner_radius=0)
+    content_area.pack(fill="both", expand=True)
 
+    active_btn = [None]
 
-def _modul_card(parent, nom, icon, color, cmd, row, col):
-    card = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=12,
-                        border_width=1, border_color=C["border"], cursor="hand2")
-    card.grid(row=row, column=col, padx=6, pady=6, sticky="nsew")
+    def carregar_panel(build_fn, btn):
+        # Ressaltar botó actiu
+        if active_btn[0]:
+            active_btn[0].configure(fg_color="transparent", text_color=SUB)
+        btn.configure(fg_color=CARD2, text_color=TEXT)
+        active_btn[0] = btn
 
-    inner = ctk.CTkFrame(card, fg_color="transparent")
-    inner.pack(fill="x", padx=14, pady=12)
+        # Netejar contingut anterior
+        for w in content_area.winfo_children():
+            w.destroy()
 
-    # icona amb fons de color
-    ic_bg = ctk.CTkFrame(inner, fg_color=_alpha_color(color),
-                         corner_radius=8, width=36, height=36)
-    ic_bg.pack(side="left")
-    ic_bg.pack_propagate(False)
-    ctk.CTkLabel(ic_bg, text=icon, font=font(18)).pack(expand=True)
+        # Construir nou panell
+        build_fn(content_area)
 
-    ctk.CTkLabel(inner, text=nom, font=font(13, bold=True),
-                 text_color=C["text2"]).pack(side="left", padx=10)
+    # Crear botons de la sidebar
+    sidebar_btns = []
+    for nom, icon, color, build_fn in _MODULS:
+        btn = ctk.CTkButton(
+            sidebar, text=f"{icon}  {nom}",
+            fg_color="transparent", hover_color=CARD2,
+            text_color=SUB, anchor="w",
+            width=184, height=38, corner_radius=8,
+            font=("Arial", 12),
+        )
+        btn.configure(command=lambda b=btn, f=build_fn: carregar_panel(f, b))
+        btn.pack(fill="x", padx=8, pady=1)
+        sidebar_btns.append((btn, build_fn))
 
-    ctk.CTkLabel(inner, text="→", font=font(14),
-                 text_color=C["muted"]).pack(side="right")
-
-    # Hover
-    def _on_enter(_): card.configure(fg_color=C["card2"], border_color=C["accent"])
-    def _on_leave(_): card.configure(fg_color=C["card"], border_color=C["border"])
-    for w in [card, inner] + inner.winfo_children():
-        w.bind("<Enter>", _on_enter)
-        w.bind("<Leave>", _on_leave)
-        w.bind("<Button-1>", lambda e, c=cmd: c())
-
-
-def _alpha_color(hex_color):
-    """Versió molt fosca d'un color per al fons de les icones."""
-    r = max(0, int(hex_color[1:3], 16) // 5)
-    g = max(0, int(hex_color[3:5], 16) // 5)
-    b = max(0, int(hex_color[5:7], 16) // 5)
-    return f"#{r:02x}{g:02x}{b:02x}"
+    # Carregar el primer mòdul per defecte
+    carregar_panel(sidebar_btns[0][1], sidebar_btns[0][0])

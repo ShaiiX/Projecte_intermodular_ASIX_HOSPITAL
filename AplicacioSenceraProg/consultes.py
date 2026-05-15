@@ -36,11 +36,12 @@ def alta_pacient_db(conn, d):
         cur.execute("INSERT INTO pacient.PACIENT (nom, cognoms, telefon, email, dni, data_naixement, tarjeta_sanitaria) VALUES (%s,%s,%s,%s,%s,%s,%s)", d)
         conn.commit()
 
-def alta_personal_db(conn, dades_comuns, tipus, dades_especifiques, asignat):
+def alta_personal_db(conn, dades_comuns, tipus, dades_especifiques):
     with conn.cursor() as cur:
-        cur.execute("INSERT INTO dades_per.PERSONAL (nom, cognom1, cognom2, dni, data_naixament, telefon, email, direccio) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id_personal", dades_comuns)
+        cur.execute("INSERT INTO dades_per.PERSONAL (nom, cognom1, cognom2, dni, data_naixement, telefon, email, direccio) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id_personal", dades_comuns)
         id_nou = cur.fetchone()[0]
         if tipus == "metge":
+            dades_especifiques.insert(0, id_nou) 
             query = """
             INSERT INTO dades_per.METGE (id_personal, especialitat, curriculum, num_colegiat)
             VALUES (%s, %s, %s, %s)
@@ -49,12 +50,14 @@ def alta_personal_db(conn, dades_comuns, tipus, dades_especifiques, asignat):
             conn.commit()
 
         elif tipus == "infermer_metge":
+            asignat = dades_especifiques.pop()
+            dades_especifiques[1] = int(dades_especifiques[1])
+            dades_especifiques.insert(0, id_nou) 
             query = """
             INSERT INTO dades_per.INFERMER (id_personal, torn, experiencia)
             VALUES (%s, %s, %s)
             """
             cur.execute(query, dades_especifiques)
-
             query = """
             INSERT INTO dades_per.INFERMER_METGE (id_infermer, id_metge)
             VALUES (%s, %s)
@@ -64,11 +67,15 @@ def alta_personal_db(conn, dades_comuns, tipus, dades_especifiques, asignat):
 
 
         elif tipus == "infermer_planta":
+            asignat = dades_especifiques.pop()
+            dades_especifiques[1] = int(dades_especifiques[1])
+            dades_especifiques.insert(0, id_nou) 
             query = """
-            INSERT INTO dades_per.METGE (id_personal, especialitat, curriculum, num_colegiat)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO dades_per.INFERMER (id_personal, torn, experiencia)
+            VALUES (%s, %s, %s)
             """
-            
+            cur.execute(query, dades_especifiques)
+
             query = """
             INSERT INTO dades_per.INFERMER_PLANTA (id_infermer, id_planta)
             VALUES (%s, %s)
@@ -77,6 +84,7 @@ def alta_personal_db(conn, dades_comuns, tipus, dades_especifiques, asignat):
             conn.commit()
 
         elif tipus == "vari":
+            dades_especifiques.insert(0, id_nou) 
             query = """
             INSERT INTO dades_per.vari (id_personal, tipus_feina, horari)
             VALUES (%s, %s, %s)

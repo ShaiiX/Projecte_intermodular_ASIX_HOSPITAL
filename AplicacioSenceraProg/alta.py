@@ -3,7 +3,7 @@ def alta_personal(conn, tipus, dades, dades_tipus, asignat):
         try:
             # Ejemplo llamando a un procedimiento o insert directo
             query = """
-            INSERT INTO dades_per.PERSONAL (nom, cognom1, cognom2, dni, data_naixament, baixa, telefon, email, direccio)
+            INSERT INTO dades_per.PERSONAL (nom, cognom1, cognom2, dni, data_naixement, baixa, telefon, email, direccio)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id_personal
             """
             id_nou = cur.fetchone()[0]
@@ -63,7 +63,7 @@ def alta_pacient(conn, dades):
     with conn.cursor() as cur:
         try:
             query = """
-            INSERT INTO pacient.PACIENT (nom, cognoms, telefon, email, dni, data_naixament, tarjeta_sanitaria) 
+            INSERT INTO pacient.PACIENT (nom, cognoms, telefon, email, dni, data_naixement, tarjeta_sanitaria) 
             VALUES (%s, %s, %s, %s, %s, %s, %s)"""
             cur.execute(query, dades)
             conn.commit()
