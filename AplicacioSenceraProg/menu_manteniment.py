@@ -5,6 +5,7 @@ from datetime import date
 from db import connectar
 import consultes
 
+
 # ── Paleta ────────────────────────────────────────────────────────────────────
 BG      = "#0d1422"
 SIDEBAR = "#0a1120"
