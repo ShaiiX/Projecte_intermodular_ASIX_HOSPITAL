@@ -172,3 +172,36 @@ def ranking_metges(conn):
         """
         cur.execute(query)
         return cur.fetchall()
+
+####
+
+def exportar_visites(conn, data_inici, data_final):
+    with conn.cursor() as cur:
+
+        query = """
+        SELECT
+            v.id_visita,
+            v.dia,
+            p.dni,
+            p.nom,
+            p.cognoms,
+            p.tarjeta_sanitaria,
+            per.nom AS nom_metge,
+            per.cognom1
+        FROM pacient.visita v
+
+        JOIN pacient.pacient p
+            ON v.id_pacient = p.id_pacient
+
+        JOIN dades_per.metge m
+            ON v.id_metge = m.id_personal
+
+        JOIN dades_per.personal per
+            ON m.id_personal = per.id_personal
+
+        WHERE v.dia BETWEEN %s AND %s
+
+        ORDER BY v.dia
+        """
+        cur.execute(query, (data_inici, data_final))
+        return cur.fetchall()

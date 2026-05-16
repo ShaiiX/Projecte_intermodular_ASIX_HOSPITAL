@@ -1,0 +1,34 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id_visita": {
+        "type": "integer"
+      },
+      "dia": {
+        "type": "string"
+      },
+      "pacient": {
+        "type": "object",
+        "properties": {
+          "dni": {
+            "type": "string"
+          },
+          "nom": {
+            "type": "string"
+          },
+          "cognoms": {
+            "type": "string"
+          },
+          "tarjeta_sanitaria": {
+            "type": "string"
+          }
+        }
+      },
+      "metge": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -5,6 +5,11 @@ from datetime import date
 from db import connectar
 import consultes
 
+import json
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+from tkinter import filedialog
+
 
 # ── Paleta ────────────────────────────────────────────────────────────────────
 BG      = "#0d1422"
@@ -472,6 +477,135 @@ def _panel_informes(parent):
     if first: _activate(first[0], first[1])
 
 
+def _panel_exportacio(parent):
+
+    _lbl(parent, "Exportació de Dades", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
+
+    card = ctk.CTkFrame(
+        parent,
+        fg_color=CARD,
+        corner_radius=12,
+        border_width=1,
+        border_color=BORDER
+    )
+    card.pack(fill="x", padx=16)
+
+    _section(card, "Exportar visites", "📤")
+
+    _lbl(card, "Data inici", size=11, color=MUTED).pack(anchor="w", padx=16)
+
+    data_inici = _cal(card)
+    data_inici.pack(anchor="w", padx=16, pady=(0, 10))
+
+    _lbl(card, "Data final", size=11, color=MUTED).pack(anchor="w", padx=16)
+
+    data_final = _cal(card)
+    data_final.pack(anchor="w", padx=16, pady=(0, 16))
+
+    sl = _status(card)
+
+    def obtenir_dades():
+
+        conn = connectar()
+
+        dades = consultes.exportar_visites(
+            conn,
+            data_inici.get_date(),
+            data_final.get_date()
+        )
+
+        conn.close()
+
+        resultat = []
+
+        for r in dades:
+
+            resultat.append({
+                "id_visita": r[0],
+                "dia": str(r[1]),
+                "pacient": {
+                    "dni": r[2],
+                    "nom": r[3],
+                    "cognoms": r[4],
+                    "tarjeta_sanitaria": r[5]
+                },
+                "metge": f"{r[6]} {r[7]}"
+            })
+
+        return resultat
+
+    def exportar_json():
+
+        try:
+
+            dades = obtenir_dades()
+
+            ruta = filedialog.asksaveasfilename(
+                defaultextension=".json",
+                filetypes=[("JSON", "*.json")]
+            )
+
+            if not ruta:
+                return
+
+            with open(ruta, "w", encoding="utf-8") as f:
+                json.dump(dades, f, indent=4, ensure_ascii=False)
+
+            _ok(sl, "✓  JSON exportat correctament")
+
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    def exportar_xml():
+
+        try:
+
+            dades = obtenir_dades()
+
+            root = ET.Element("visites")
+
+            for visita in dades:
+
+                visita_xml = ET.SubElement(root, "visita")
+
+                ET.SubElement(visita_xml, "id_visita").text = str(visita["id_visita"])
+                ET.SubElement(visita_xml, "dia").text = visita["dia"]
+
+                pacient = ET.SubElement(visita_xml, "pacient")
+
+                ET.SubElement(pacient, "dni").text = visita["pacient"]["dni"]
+                ET.SubElement(pacient, "nom").text = visita["pacient"]["nom"]
+                ET.SubElement(pacient, "cognoms").text = visita["pacient"]["cognoms"]
+                ET.SubElement(pacient, "tarjeta_sanitaria").text = visita["pacient"]["tarjeta_sanitaria"]
+
+                ET.SubElement(visita_xml, "metge").text = visita["metge"]
+
+            xml_str = ET.tostring(root, encoding="utf-8")
+
+            pretty = minidom.parseString(xml_str).toprettyxml(indent="\t")
+
+            ruta = filedialog.asksaveasfilename(
+                defaultextension=".xml",
+                filetypes=[("XML", "*.xml")]
+            )
+
+            if not ruta:
+                return
+
+            with open(ruta, "w", encoding="utf-8") as f:
+                f.write(pretty)
+
+            _ok(sl, "✓  XML exportat correctament")
+
+        except Exception as ex:
+            _err(sl, str(ex))
+
+    _btn(card, "📄 Exportar JSON", exportar_json, width=420).pack(padx=16, pady=(0, 8))
+
+    _btn(card, "📰 Exportar XML", exportar_xml, width=420).pack(padx=16, pady=(0, 16))
+
+#
+
 def _panel_dummy(parent):
     import threading
 
@@ -523,7 +657,8 @@ _MODULS = [
     ("Historial Pacient",   "📂", PURPLE,  _panel_historial),
     ("Prog. Metges",        "📅", AMBER,   _panel_programacio),
     ("Informes",            "📊", GREEN,   _panel_informes),
-    ("Dummy Data",          "⚗️",  DANGER,  _panel_dummy),
+    ("Dummy Data",          "⚗️", DANGER,  _panel_dummy),
+    ("Exportació",          "📤", TEAL,    _panel_exportacio)
 ]
 
 
