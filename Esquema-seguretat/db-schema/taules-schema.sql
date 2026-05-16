@@ -96,7 +96,7 @@ CREATE TABLE dades_per.PERSONAL(
     email VARCHAR(100),
     direccio TEXT,
     data_naixement DATE,
-    baixa DATE
+    baixa BOOLEAN
 );
 
 -- herència de personal

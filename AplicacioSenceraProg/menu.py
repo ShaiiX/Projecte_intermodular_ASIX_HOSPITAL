@@ -4,6 +4,7 @@ import funcions
 from db import tancar_sessio, connectar
 import config
 import menu_manteniment
+import menu_consultes
 import threading
 from datetime import date
 
@@ -26,10 +27,10 @@ COLORS = {
 def _fetch_stats():
     """Retorna un dict amb estadístiques bàsiques. Retorna zeros si falla."""
     stats = {
-        "pacients": "—",
-        "personal": "—",
-        "visites_avui": "—",
-        "operacions_avui": "—",
+        "pacients": "0",
+        "personal": "0",
+        "visites_avui": "0",
+        "operacions_avui": "0",
     }
     try:
         conn = connectar()
@@ -260,7 +261,7 @@ def obrir_menu(rol):
             actions_frame, "📊", "Consultes",
             "Informes, rankings i dades agregades",
             COLORS["accent2"],
-            lambda: messagebox.showinfo("Pròximament", "Mòdul en desenvolupament"),
+            menu_consultes.obrir_consultes,
             col=2, row=0,
         )
 
@@ -295,57 +296,182 @@ def obrir_menu(rol):
 
 # ── Gestió d'usuaris ──────────────────────────────────────────────────────────
 def gestio_usuaris():
+    C = COLORS
     g = ctk.CTkToplevel()
+    g.title("Gestió d'usuaris")
+    g.geometry("460x520")
+    g.configure(fg_color=C["bg_dark"])
     g.lift()
     g.focus_force()
-    g.attributes("-topmost", True)
-    g.title("Gestió d'usuaris")
-    g.geometry("420x340")
-    g.configure(fg_color=COLORS["bg_dark"])
 
-    ctk.CTkLabel(
-        g,
-        text="Nou usuari",
-        font=ctk.CTkFont(family="Georgia", size=20, weight="bold"),
-        text_color=COLORS["text_main"],
-    ).pack(pady=(28, 10))
+    # Topbar
+    topbar = ctk.CTkFrame(g, fg_color=C["bg_card"], corner_radius=0, height=52)
+    topbar.pack(fill="x")
+    topbar.pack_propagate(False)
+    ctk.CTkLabel(topbar, text="👤  Gestió d'usuaris",
+                 font=ctk.CTkFont(size=16, weight="bold"),
+                 text_color=C["text_main"]).pack(side="left", padx=20, pady=14)
 
-    frame = ctk.CTkFrame(g, fg_color=COLORS["bg_card"], corner_radius=14,
-                         border_width=1, border_color=COLORS["border"])
-    frame.pack(padx=30, fill="x")
+    # Selector de pestanya
+    tab_frame = ctk.CTkFrame(g, fg_color="transparent")
+    tab_frame.pack(fill="x", padx=24, pady=(16, 0))
 
-    entry_user = ctk.CTkEntry(
-        frame, placeholder_text="Nom d'usuari",
-        width=300, height=42, corner_radius=10,
-        fg_color=COLORS["bg_card2"], border_color=COLORS["border"],
-        text_color=COLORS["text_main"],
-    )
-    entry_user.pack(pady=(20, 8), padx=20)
+    content = ctk.CTkFrame(g, fg_color="transparent")
+    content.pack(fill="both", expand=True, padx=24, pady=(8, 24))
 
-    entry_pass = ctk.CTkEntry(
-        frame, placeholder_text="Contrasenya", show="*",
-        width=300, height=42, corner_radius=10,
-        fg_color=COLORS["bg_card2"], border_color=COLORS["border"],
-        text_color=COLORS["text_main"],
-    )
-    entry_pass.pack(pady=(0, 16), padx=20)
+    active_tab = [None]
 
-    def registrar():
-        nom = entry_user.get()
-        pwd = entry_pass.get()
-        if funcions.proces_registre(nom, pwd):
-            messagebox.showinfo("✅ OK", "Usuari creat correctament")
-            g.destroy()
-        else:
-            messagebox.showerror("Error", "No s'ha pogut crear l'usuari")
+    def _tab_btn(text, cmd):
+        b = ctk.CTkButton(tab_frame, text=text, width=0, height=34,
+                          fg_color=C["bg_card"], hover_color=C["bg_card2"],
+                          text_color=C["text_sub"], border_color=C["border"],
+                          border_width=1, corner_radius=8,
+                          font=ctk.CTkFont(size=12))
+        b.pack(side="left", padx=(0, 6))
+        b.configure(command=lambda: _activate(b, cmd))
+        return b
 
-    ctk.CTkButton(
-        frame,
-        text="Registrar usuari",
-        command=registrar,
-        fg_color=COLORS["accent"],
-        hover_color=COLORS["accent2"],
-        width=300, height=42, corner_radius=10,
-        font=ctk.CTkFont(size=14, weight="bold"),
-        text_color="#ffffff",
-    ).pack(pady=(0, 20), padx=20)
+    def _activate(btn, cmd):
+        if active_tab[0]:
+            active_tab[0].configure(fg_color=C["bg_card"], text_color=C["text_sub"],
+                                     border_color=C["border"])
+        btn.configure(fg_color=C["bg_card2"], text_color=C["accent"],
+                      border_color=C["accent"])
+        active_tab[0] = btn
+        for w in content.winfo_children():
+            w.destroy()
+        cmd()
+
+    def _entry_field(parent, placeholder, show=None):
+        kw = dict(placeholder_text=placeholder, width=380, height=42,
+                  corner_radius=10, fg_color=C["bg_card2"],
+                  border_color=C["border"], text_color=C["text_main"],
+                  font=ctk.CTkFont(size=13))
+        if show: kw["show"] = show
+        e = ctk.CTkEntry(parent, **kw)
+        e.pack(pady=(0, 10), padx=4)
+        return e
+
+    def _status_lbl(parent):
+        l = ctk.CTkLabel(parent, text="", font=ctk.CTkFont(size=12),
+                         text_color=C["accent3"], wraplength=380)
+        l.pack(pady=(4, 0), padx=4)
+        return l
+
+    # ── Pestanya: Nou usuari ──────────────────────────────────────────────
+    def tab_nou_usuari():
+        card = ctk.CTkFrame(content, fg_color=C["bg_card"], corner_radius=14,
+                            border_width=1, border_color=C["border"])
+        card.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(card, text="Nom d'usuari", font=ctk.CTkFont(size=11),
+                     text_color=C["text_sub"]).pack(anchor="w", padx=20, pady=(16, 2))
+        e_user = _entry_field(card, "Nom d'usuari")
+        e_user.pack_forget()
+        e_user.pack(padx=20, pady=(0, 8))
+
+        ctk.CTkLabel(card, text="Contrasenya", font=ctk.CTkFont(size=11),
+                     text_color=C["text_sub"]).pack(anchor="w", padx=20, pady=(0, 2))
+        e_pass = _entry_field(card, "Contrasenya", show="*")
+        e_pass.pack_forget()
+        e_pass.pack(padx=20, pady=(0, 8))
+
+        sl = _status_lbl(card)
+
+        def registrar():
+            nom = e_user.get().strip()
+            pwd = e_pass.get().strip()
+            if not nom or not pwd:
+                sl.configure(text="⚠️  Tots els camps són obligatoris",
+                             text_color=C["accent4"]); return
+            if funcions.proces_registre(nom, pwd):
+                sl.configure(text="✅  Usuari creat correctament",
+                             text_color=C["accent3"])
+                e_user.delete(0, "end")
+                e_pass.delete(0, "end")
+            else:
+                sl.configure(text="❌  No s'ha pogut crear l'usuari",
+                             text_color=C["danger"])
+
+        ctk.CTkButton(card, text="Crear usuari", command=registrar,
+                      fg_color=C["accent"], hover_color=C["accent2"],
+                      width=380, height=42, corner_radius=10,
+                      font=ctk.CTkFont(size=13, weight="bold"),
+                      text_color="#ffffff").pack(padx=20, pady=(4, 20))
+
+    # ── Pestanya: Canviar contrasenya ─────────────────────────────────────
+    def tab_canviar_password():
+        card = ctk.CTkFrame(content, fg_color=C["bg_card"], corner_radius=14,
+                            border_width=1, border_color=C["border"])
+        card.pack(fill="x")
+
+        ctk.CTkLabel(card, text="Nom d'usuari", font=ctk.CTkFont(size=11),
+                     text_color=C["text_sub"]).pack(anchor="w", padx=20, pady=(16, 2))
+        e_user = ctk.CTkEntry(card, placeholder_text="Usuari a modificar",
+                              width=380, height=42, corner_radius=10,
+                              fg_color=C["bg_card2"], border_color=C["border"],
+                              text_color=C["text_main"], font=ctk.CTkFont(size=13))
+        e_user.pack(padx=20, pady=(0, 8))
+
+        ctk.CTkLabel(card, text="Nova contrasenya", font=ctk.CTkFont(size=11),
+                     text_color=C["text_sub"]).pack(anchor="w", padx=20, pady=(0, 2))
+        e_pass = ctk.CTkEntry(card, placeholder_text="Nova contrasenya", show="*",
+                              width=380, height=42, corner_radius=10,
+                              fg_color=C["bg_card2"], border_color=C["border"],
+                              text_color=C["text_main"], font=ctk.CTkFont(size=13))
+        e_pass.pack(padx=20, pady=(0, 8))
+
+        ctk.CTkLabel(card, text="Confirmar contrasenya", font=ctk.CTkFont(size=11),
+                     text_color=C["text_sub"]).pack(anchor="w", padx=20, pady=(0, 2))
+        e_confirm = ctk.CTkEntry(card, placeholder_text="Repeteix la contrasenya", show="*",
+                                 width=380, height=42, corner_radius=10,
+                                 fg_color=C["bg_card2"], border_color=C["border"],
+                                 text_color=C["text_main"], font=ctk.CTkFont(size=13))
+        e_confirm.pack(padx=20, pady=(0, 8))
+
+        sl = ctk.CTkLabel(card, text="", font=ctk.CTkFont(size=12),
+                          text_color=C["accent3"], wraplength=380)
+        sl.pack(pady=(4, 0), padx=20)
+
+        def canviar():
+            nom = e_user.get().strip()
+            pwd = e_pass.get().strip()
+            confirm = e_confirm.get().strip()
+            if not nom or not pwd or not confirm:
+                sl.configure(text="⚠️  Tots els camps són obligatoris",
+                             text_color=C["accent4"]); return
+            if pwd != confirm:
+                sl.configure(text="❌  Les contrasenyes no coincideixen",
+                             text_color=C["danger"]); return
+            try:
+                import autentificacio
+                hashed = autentificacio.hash_contrasenya(pwd)
+                conn = connectar()
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "UPDATE seguretat.usuari SET password = %s WHERE username = %s",
+                        (hashed, nom)
+                    )
+                    if cur.rowcount == 0:
+                        sl.configure(text="❌  Usuari no trobat", text_color=C["danger"])
+                    else:
+                        conn.commit()
+                        sl.configure(text="✅  Contrasenya actualitzada correctament",
+                                     text_color=C["accent3"])
+                        e_user.delete(0, "end")
+                        e_pass.delete(0, "end")
+                        e_confirm.delete(0, "end")
+                conn.close()
+            except Exception as ex:
+                sl.configure(text=f"❌  {ex}", text_color=C["danger"])
+
+        ctk.CTkButton(card, text="Canviar contrasenya", command=canviar,
+                      fg_color=C["accent3"], hover_color="#059669",
+                      width=380, height=42, corner_radius=10,
+                      font=ctk.CTkFont(size=13, weight="bold"),
+                      text_color="#ffffff").pack(padx=20, pady=(4, 20))
+
+    # Crear les pestanyes i activar la primera
+    b1 = _tab_btn("➕  Nou usuari", tab_nou_usuari)
+    b2 = _tab_btn("🔑  Canviar contrasenya", tab_canviar_password)
+    _activate(b1, tab_nou_usuari)

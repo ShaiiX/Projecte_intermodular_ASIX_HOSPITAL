@@ -116,20 +116,16 @@ def consultar_programacio_metge(conn):
 def informe_planta(conn, id_planta):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         query = """
-        SELECT 
-            p.nom_planta,
-            COUNT(DISTINCT h.id_habitacio) AS total_habitacions,
-            COUNT(DISTINCT q.id_quirofan) AS total_quirofans,
-            COUNT(DISTINCT ip.id_infermer) AS total_infermeria
-        FROM estructura.planta p
-        LEFT JOIN estructura.habitacio h 
-            ON p.id_planta = h.id_planta
-        LEFT JOIN estructura.quirofan q 
-            ON p.id_planta = q.id_planta
-        LEFT JOIN dades_per.infermer_planta ip 
-            ON p.id_planta = ip.id_planta
-        WHERE p.id_planta = %s
-        GROUP BY p.nom_planta;
+            SELECT p.num_planta,
+                    COUNT(DISTINCT h.id_habitacio)  AS total_habitacions,
+                    COUNT(DISTINCT q.num_quirofan)   AS total_quirofans,
+                    COUNT(DISTINCT inf.id_infermer) AS total_infermeria
+            FROM estructura.planta p
+            LEFT JOIN estructura.habitacio h   ON h.id_planta  = p.id_planta
+            LEFT JOIN estructura.quirofan q    ON q.id_planta  = p.id_planta
+            LEFT JOIN dades_per.infermer_planta inf ON inf.id_planta = p.id_planta
+            WHERE p.id_planta = %s
+            GROUP BY p.num_planta
         """
         cur.execute(query, (id_planta,))
         return cur.fetchone()
@@ -137,38 +133,33 @@ def informe_planta(conn, id_planta):
 def informe_personal(conn):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         query = """
-        SELECT id_personal, nom, cognom1, cognom2, telefon, email
-        FROM dades_per.personal
-        ORDER BY cognom1;
+            SELECT id_personal, nom, cognom1, cognom2, dni, data_naixement, baixa, telefon, email, direccio
+            FROM dades_per.personal
+            ORDER BY cognom1, cognom2, nom
         """
         cur.execute(query)
         return cur.fetchall()
 
-def informe_visites_dia(conn, data):
+def informe_visites_dia(conn):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         query = """
-        SELECT 
-            COUNT(*) AS total_visites
-        FROM pacient.visita
-        WHERE DATE(data_visita) = %s;
+            SELECT DATE(data) AS dia, COUNT(*) AS total_visites
+            FROM pacient.visita
+            GROUP BY DATE(data)
+            ORDER BY dia DESC
         """
-        cur.execute(query, (data,))
-        return cur.fetchone()
+        cur.execute(query)
+        return cur.fetchall()
 
 def ranking_metges(conn):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
         query = """
-        SELECT 
-            p.nom,
-            p.cognom1,
-            COUNT(v.id_visita) AS total_visites
-        FROM dades_per.metge m
-        JOIN dades_per.personal p 
-            ON m.id_personal = p.id_personal
-        LEFT JOIN pacient.visita v 
-            ON m.id_personal = v.id_metge
-        GROUP BY p.nom, p.cognom1
-        ORDER BY total_visites DESC;
+            SELECT per.id_personal, per.nom, per.cognom1, per.cognom2,
+                    COUNT(v.id_visita) AS total_pacients
+            FROM pacient.visita v
+            INNER JOIN dades_per.personal per ON per.id_personal = v.id_metge
+            GROUP BY per.id_personal, per.nom, per.cognom1, per.cognom2
+            ORDER BY total_pacients DESC
         """
         cur.execute(query)
         return cur.fetchall()
@@ -181,7 +172,7 @@ def exportar_visites(conn, data_inici, data_final):
         query = """
         SELECT
             v.id_visita,
-            v.dia,
+            DATE(v.data),
             p.dni,
             p.nom,
             p.cognoms,
@@ -199,9 +190,9 @@ def exportar_visites(conn, data_inici, data_final):
         JOIN dades_per.personal per
             ON m.id_personal = per.id_personal
 
-        WHERE v.dia BETWEEN %s AND %s
+        WHERE DATE(v.data) BETWEEN %s AND %s
 
-        ORDER BY v.dia
+        ORDER BY (v.data)
         """
         cur.execute(query, (data_inici, data_final))
         return cur.fetchall()

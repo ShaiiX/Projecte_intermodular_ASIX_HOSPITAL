@@ -46,7 +46,7 @@ def login_usuari(nom_usuari, contrasenya):
             SELECT u.password, r.nom FROM seguretat.usuari u
             JOIN seguretat.usuari_rol ur ON ur.id_usuari = u.id_usuari
             JOIN seguretat.rol r ON ur.id_rol = r.id_rol
-            WHERE username = %s
+            WHERE username = %s AND actiu = True
         """, (nom_usuari,))
         result = cur.fetchone()
         cur.close()

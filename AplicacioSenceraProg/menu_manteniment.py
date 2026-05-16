@@ -402,81 +402,6 @@ def _panel_programacio(parent):
     _btn(parent, "🔄  Actualitzar", cargar, width=200).pack(padx=16, pady=(8, 0), anchor="w")
     cargar()
 
-
-def _panel_informes(parent):
-    _lbl(parent, "Informes", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
-
-    conn = connectar()
-
-    # Botons selector
-    btn_row = ctk.CTkFrame(parent, fg_color="transparent")
-    btn_row.pack(fill="x", padx=16, pady=(0, 10))
-    active_btn = [None]
-
-    box = _textbox(parent, height=300)
-    box.pack(padx=16, fill="x")
-
-    def _activate(b, cmd):
-        if active_btn[0]:
-            active_btn[0].configure(fg_color=CARD, text_color=SUB, border_color=BORDER)
-        b.configure(fg_color=CARD2, text_color=ACCENT, border_color=ACCENT)
-        active_btn[0] = b
-        cmd()
-
-    def _show_rows(rows):
-        box.delete("1.0", "end")
-        for k, v in rows:
-            box.insert("end", f"{k:<26}{v}\n")
-
-    def informe_planta():
-        try:
-            d = consultes.informe_planta(conn, 1)
-            _show_rows([("Planta", d.get("nom_planta","—")),("Habitacions",str(d.get("total_habitacions","—"))),
-                        ("Quiròfans",str(d.get("total_quirofans","—"))),("Infermeria",str(d.get("total_infermeria","—")))])
-        except Exception as ex: _show_rows([("Error", str(ex))])
-
-    def informe_personal():
-        try:
-            dades = consultes.informe_personal(conn)
-            box.delete("1.0", "end")
-            box.insert("end", f"{'ID':<6}{'Nom':<26}{'Telèfon':<16}{'Email'}\n{'─'*72}\n")
-            for p in dades:
-                box.insert("end", f"{str(p.get('id_personal','')):<6}{p.get('nom','')+' '+p.get('cognom1',''):<26}{str(p.get('telefon','')):<16}{p.get('email','')}\n")
-        except Exception as ex: _show_rows([("Error", str(ex))])
-
-    def informe_visites():
-        try:
-            d = consultes.informe_visites_dia(conn, date.today().isoformat())
-            _show_rows([("Total visites avui", str(d.get("total_visites","—")))])
-        except Exception as ex: _show_rows([("Error", str(ex))])
-
-    def ranking():
-        try:
-            dades = consultes.ranking_metges(conn)
-            box.delete("1.0", "end")
-            box.insert("end", f"{'#':<4}{'Metge':<28}{'Visites'}\n{'─'*46}\n")
-            for i, m in enumerate(dades, 1):
-                box.insert("end", f"{i:<4}{m.get('nom','')+' '+m.get('cognom1',''):<28}{m.get('total_visites','0')}\n")
-        except Exception as ex: _show_rows([("Error", str(ex))])
-
-    btns_def = [("🏢  Planta", informe_planta),("👥  Personal", informe_personal),
-                ("📋  Visites avui", informe_visites),("🏆  Rànquing", ranking)]
-
-    first = None
-    for text, cmd in btns_def:
-        b = ctk.CTkButton(btn_row, text=text, width=0, height=32,
-                          fg_color=CARD, hover_color=CARD2, text_color=SUB,
-                          border_color=BORDER, border_width=1,
-                          corner_radius=7, font=("Arial", 11),
-                          command=lambda b2=None, c=cmd: _activate(b2, c))
-        # necessitem la referència al botó dins del command
-        b.configure(command=lambda b2=b, c=cmd: _activate(b2, c))
-        b.pack(side="left", padx=(0, 6))
-        if first is None: first = (b, cmd)
-
-    if first: _activate(first[0], first[1])
-
-
 def _panel_exportacio(parent):
 
     _lbl(parent, "Exportació de Dades", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
@@ -656,7 +581,6 @@ _MODULS = [
     ("Habitacions",         "🛏️", ACCENT,  _panel_habitacio),
     ("Historial Pacient",   "📂", PURPLE,  _panel_historial),
     ("Prog. Metges",        "📅", AMBER,   _panel_programacio),
-    ("Informes",            "📊", GREEN,   _panel_informes),
     ("Dummy Data",          "⚗️", DANGER,  _panel_dummy),
     ("Exportació",          "📤", TEAL,    _panel_exportacio)
 ]
