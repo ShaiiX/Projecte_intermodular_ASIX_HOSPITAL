@@ -40,6 +40,9 @@ def connectar():
             user=usuari,
             password=contrasenya
         )
+        with conn.cursor() as cur:
+            cur.execute("SET LOCAL app.usuari_actiu TO %s", (usuari,))
+            cur.close()
         return conn
     except Exception as e:
         messagebox.showerror("Error BD", f"No s'ha pogut connectar:\n{e}")
