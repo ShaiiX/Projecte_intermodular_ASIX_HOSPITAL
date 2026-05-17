@@ -21,7 +21,7 @@ CREATE OR REPLACE VIEW pacient.vista_visites_detallades AS
 SELECT 
     v.data::date AS dia,
     v.data::time AS hora_entrada,
-    p_met.nom || ' ' || p_met.cognom1 AS metge,
+    p_met.nom || ' ' || p_met.cognom1 || ' ' || p_met.cognom2 AS metge,
     p_pac.nom || ' ' || p_pac.cognoms AS pacient
 FROM pacient.VISITA v
 JOIN dades_per.METGE m ON v.id_personal = m.id_personal
@@ -31,12 +31,13 @@ JOIN pacient.PACIENT p_pac ON v.id_pacient = p_pac.id_pacient;
 -- Vista d'Inventari
 CREATE OR REPLACE VIEW estructura.vista_inventari_quirofans AS
 SELECT 
+    q.id_planta,
     q.num_quirofan,
     t.tipus AS nom_aparell,
     t.marca,
     COUNT(a.id_aparell) AS quantitat
 FROM estructura.QUIROFAN q
-JOIN estructura.APARELL_MEDIC a ON q.id_quirofan = a.id_quirofan
+JOIN estructura.APARELL_MEDIC a ON q.num_quirofan = a.num_quirofan AND q.id_planta = a.id_planta
 JOIN estructura.TIPUS t ON a.id_tipus = t.id_tipus
 GROUP BY q.num_quirofan, t.tipus, t.marca;
 
@@ -79,11 +80,11 @@ BEFORE INSERT ON pacient.OPERACIO
 FOR EACH ROW EXECUTE FUNCTION pacient.validar_quirofan_ocu();
 
 -- opcional 1:
-CREATE OR REPLACE VIEW vista_ingressos_habitacio AS
+CREATE OR REPLACE VIEW pacient.vista_ingressos_habitacio AS
 SELECT i.id_habitacio, i.data_ingres, i.data_sortida_prevista,
-    CONCAT(p.nom, ' ', p.cognoms) AS pacient
-FROM INGRES i
-INNER JOIN PACIENT p 
+    CONCAT(p.nom, ' ', p.cognoms) AS pacient, i.data_sortida_real
+FROM pacient.INGRES i
+INNER JOIN pacient.PACIENT p 
     ON p.id_pacient = i.id_pacient;
 
 -- ús de la vista
@@ -95,7 +96,7 @@ ORDER BY data_ingres;
 */
 
 -- opcional 2:
-CREATE OR REPLACE VIEW vista_pacient_historial AS
+CREATE OR REPLACE VIEW pacient.vista_pacient_historial AS
 SELECT p.id_pacient, p.nom, p.cognoms,
     -- visites + diagnostic
     COUNT(DISTINCT v.id_visita) AS total_visites,
@@ -107,16 +108,18 @@ SELECT p.id_pacient, p.nom, p.cognoms,
     -- vegades quiròfan
     COUNT(DISTINCT o.id_operacio) AS total_operacions
 
-FROM PACIENT p
-LEFT JOIN VISITA v
+FROM pacient.PACIENT p
+LEFT JOIN pacient.VISITA v
     ON v.id_pacient = p.id_pacient
-LEFT JOIN RECEPTA r
+LEFT JOIN pacient.RECEPTA r
     ON r.id_visita = v.id_visita
-LEFT JOIN MEDICAMENT m
-    ON m.id_medicament = r.id_medicament
-LEFT JOIN INGRESS i
+LEFT JOIN pacient.linia_recepta lr
+    ON lr.id_recepta = r.id_recepta
+LEFT JOIN dades_pre.MEDICAMENT m
+    ON m.id_medicament = lr.id_medicament
+LEFT JOIN pacient.INGRESS i
     ON i.id_pacient = p.id_pacient
-LEFT JOIN OPERACIO o
+LEFT JOIN pacient.OPERACIO o
     ON o.id_pacient = p.id_pacient
 GROUP BY p.id_pacient, p.nom, p.cognoms;
 

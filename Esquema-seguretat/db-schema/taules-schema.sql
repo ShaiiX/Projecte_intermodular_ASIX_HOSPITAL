@@ -61,7 +61,7 @@ CREATE TABLE estructura.HABITACIO (
 
 CREATE TABLE estructura.QUIROFAN(
     id_planta INT REFERENCES estructura.PLANTA(id_planta),
-    num_quirofan INT,
+    num_quirofan VARCHAR(3),
     estat VARCHAR(50),
     PRIMARY KEY (id_planta, num_quirofan)
 );

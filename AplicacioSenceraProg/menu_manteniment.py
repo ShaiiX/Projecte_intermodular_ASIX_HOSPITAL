@@ -305,14 +305,14 @@ def _panel_inventari(parent):
 
     box = _textbox(parent, height=300)
     box.pack(padx=16, fill="x")
-    box.insert("end", f"{'Quiròfan':<12}{'Aparell':<26}{'Marca':<18}{'Quantitat'}\n{'─'*68}\n")
+    box.insert("end", f"{'Planta':<10}{'Quiròfan':<10}{'Aparell':<26}{'Marca':<18}{'Quantitat'}\n{'─'*68}\n")
 
     try:
         conn = connectar()
         res = consultes.consultar_inventari(conn)
         conn.close()
         for r in res:
-            box.insert("end", f"{str(r.get('num_quirofan','')):<12}{str(r.get('nom_aparell','')):<26}{str(r.get('marca','')):<18}{r.get('quantitat','')}\n")
+            box.insert("end", f"{str(r.get('id_planta','')):<10}{str(r.get('num_quirofan','')):<10}{str(r.get('nom_aparell','')):<26}{str(r.get('marca','')):<18}{r.get('quantitat','')}\n")
         _ok(sl, f"✓  {len(res)} registres carregats")
     except Exception as ex:
         _err(sl, str(ex))
@@ -338,7 +338,7 @@ def _panel_habitacio(parent):
                 _ok(sl, "No hi ha ingressos actius"); return
             _ok(sl, f"✓  {len(res)} ingrés/os trobats")
             for r in res:
-                box.insert("end", f"Pacient: {r.get('pacient','—')}  |  Entrada: {r.get('data_ingres','—')}\n")
+                box.insert("end", f"Pacient: {r.get('pacient','—')}  |  Entrada: {r.get('data_ingres','—')}  |  Sortida_prevista: {r.get('data_sortida_prevista','—')}  |  Sortida_real: {r.get('data_sortida_real','—')}\n")
         except Exception as ex:
             _err(sl, str(ex))
 

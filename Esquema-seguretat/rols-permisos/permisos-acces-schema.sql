@@ -35,3 +35,6 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA estructura TO admin_role;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA seguretat TO admin_role;
 
 GRANT SELECT ON pacient.vista_operacions_detallades TO admin_role;
+GRANT SELECT ON pacient.vista_visites_detallades TO admin_role;
+GRANT SELECT ON estructura.vista_inventari_quirofans TO admin_role;
+GRANT SELECT ON pacient.vista_ingressos_habitacio TO admin_role;
