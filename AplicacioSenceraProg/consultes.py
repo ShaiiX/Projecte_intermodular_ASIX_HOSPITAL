@@ -96,7 +96,7 @@ def alta_personal_db(conn, dades_comuns, tipus, dades_especifiques):
 
 def consultar_opcional_habitacio(conn, id_hab):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute("SELECT * FROM vista_ingressos_habitacio WHERE id_habitacio = %s", (id_hab,))
+        cur.execute("SELECT * FROM pacient.vista_ingressos_habitacio WHERE id_habitacio = %s", (id_hab,))
         return cur.fetchall()
 
 def consultar_opcional_historial(conn, id_pac):
