@@ -95,3 +95,7 @@ Es mostra un gràfic amb el detall de visites segons l’especialitat mèdica. P
 3. Powerbi importa aquestes dades
 4. El dashboard genera els gràfics automàticament
 
+---
+
+[Aplicació amb exportació de dades](https://github.com/ShaiiX/Projecte_intermodular_ASIX_HOSPITAL/tree/main/AplicacioSenceraProg)
+

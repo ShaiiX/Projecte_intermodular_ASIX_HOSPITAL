@@ -454,7 +454,8 @@ def _panel_exportacio(parent):
                     "cognoms": r[4],
                     "tarjeta_sanitaria": r[5]
                 },
-                "metge": f"{r[6]} {r[7]}"
+                "metge": f"{r[6]} {r[7]}",
+                "especialitat": r[8]
             })
 
         return resultat

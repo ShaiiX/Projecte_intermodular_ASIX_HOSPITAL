@@ -167,18 +167,25 @@ def ranking_metges(conn):
 ####
 
 def exportar_visites(conn, data_inici, data_final):
+
     with conn.cursor() as cur:
 
         query = """
         SELECT
             v.id_visita,
-            DATE(v.data),
+
+            DATE(v.data) AS dia,
+
             p.dni,
             p.nom,
             p.cognoms,
             p.tarjeta_sanitaria,
+
             per.nom AS nom_metge,
-            per.cognom1
+            per.cognom1,
+
+            m.especialitat
+
         FROM pacient.visita v
 
         JOIN pacient.pacient p
@@ -190,9 +197,13 @@ def exportar_visites(conn, data_inici, data_final):
         JOIN dades_per.personal per
             ON m.id_personal = per.id_personal
 
-        WHERE DATE(v.data) BETWEEN %s AND %s
+        WHERE DATE(v.data)
+        BETWEEN %s AND %s
 
-        ORDER BY (v.data)
+        ORDER BY v.data
         """
+
         cur.execute(query, (data_inici, data_final))
+
         return cur.fetchall()
+    
