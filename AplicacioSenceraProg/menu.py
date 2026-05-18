@@ -59,7 +59,7 @@ def obrir_menu(rol):
     ctk.set_appearance_mode("dark")
 
     f = ctk.CTkToplevel()
-    f.title("Hospital — Dashboard")
+    f.title("Hospivibe")
     f.geometry("860x620")
     f.resizable(True, True)
     f.configure(fg_color=COLORS["bg_dark"])
@@ -71,7 +71,7 @@ def obrir_menu(rol):
 
     ctk.CTkLabel(
         header,
-        text="🏥  Hospital",
+        text="🏥  Hospivibe",
         font=ctk.CTkFont(family="Georgia", size=22, weight="bold"),
         text_color=COLORS["text_main"],
     ).pack(side="left", padx=28, pady=16)
@@ -240,55 +240,38 @@ def obrir_menu(rol):
         b = max(0, int(hex_color[5:7], 16) - 30)
         return f"#{r:02x}{g:02x}{b:02x}"
 
-    if rol == "admin":
-        actions_frame.columnconfigure((0, 1, 2), weight=1)
+    # tots els rols veuen manteniment i consultes
+    actions_frame.columnconfigure((0, 1, 2), weight=1)
 
-        _action_btn(
-            actions_frame, "🔧", "Manteniment",
-            "Gestió d'altes, operacions, visites i inventari",
-            COLORS["accent"],
-            menu_manteniment.obrir_manteniment,
-            col=0, row=0,
-        )
+    _action_btn(
+        actions_frame, "🔧", "Manteniment",
+        "Gestió d'altes, operacions, visites i inventari",
+        COLORS["accent"],
+        menu_manteniment.obrir_manteniment,
+        col=0, row=0,
+    )
+    _action_btn(
+        actions_frame, "📊", "Consultes",
+        "Informes, rànquings i dades agregades",
+        COLORS["accent2"],
+        menu_consultes.obrir_consultes,
+        col=1, row=0,
+    )
+
+    # gestió d'usuaris només visible per als administradors
+    if rol == "admin":
         _action_btn(
             actions_frame, "👤", "Gestió usuaris",
             "Crear i administrar comptes d'accés al sistema",
             COLORS["accent3"],
             gestio_usuaris,
-            col=1, row=0,
-        )
-        _action_btn(
-            actions_frame, "📊", "Consultes",
-            "Informes, rankings i dades agregades",
-            COLORS["accent2"],
-            menu_consultes.obrir_consultes,
             col=2, row=0,
         )
-
-    elif rol == "usuari":
-        actions_frame.columnconfigure((0, 1), weight=1)
-
-        _action_btn(
-            actions_frame, "📋", "Les meves visites",
-            "Consulta les visites del dia assignades",
-            COLORS["accent"],
-            lambda: messagebox.showinfo("Pròximament", "Mòdul en desenvolupament"),
-            col=0, row=0,
-        )
-        _action_btn(
-            actions_frame, "📅", "Programació",
-            "Veure la programació setmanal",
-            COLORS["accent3"],
-            lambda: messagebox.showinfo("Pròximament", "Mòdul en desenvolupament"),
-            col=1, row=0,
-        )
-    else:
-        messagebox.showerror("Error", "Rol incorrecte")
 
     # Peu de pàgina
     ctk.CTkLabel(
         body,
-        text="Sistema de gestió hospitalària  ·  v1.0",
+        text="Sistema de gestió hospitalària",
         font=ctk.CTkFont(size=10),
         text_color=COLORS["border"],
     ).pack(pady=(10, 20))
@@ -358,7 +341,7 @@ def gestio_usuaris():
         l.pack(pady=(4, 0), padx=4)
         return l
 
-    # ── Pestanya: Nou usuari ──────────────────────────────────────────────
+    # pestanya per crear un nou usuari amb nom, contrasenya i rol
     def tab_nou_usuari():
         card = ctk.CTkFrame(content, fg_color=C["bg_card"], corner_radius=14,
                             border_width=1, border_color=C["border"])
@@ -366,32 +349,104 @@ def gestio_usuaris():
 
         ctk.CTkLabel(card, text="Nom d'usuari", font=ctk.CTkFont(size=11),
                      text_color=C["text_sub"]).pack(anchor="w", padx=20, pady=(16, 2))
-        e_user = _entry_field(card, "Nom d'usuari")
-        e_user.pack_forget()
+        e_user = ctk.CTkEntry(card, placeholder_text="Nom d'usuari",
+                              width=380, height=42, corner_radius=10,
+                              fg_color=C["bg_card2"], border_color=C["border"],
+                              text_color=C["text_main"], font=ctk.CTkFont(size=13))
         e_user.pack(padx=20, pady=(0, 8))
 
         ctk.CTkLabel(card, text="Contrasenya", font=ctk.CTkFont(size=11),
                      text_color=C["text_sub"]).pack(anchor="w", padx=20, pady=(0, 2))
-        e_pass = _entry_field(card, "Contrasenya", show="*")
-        e_pass.pack_forget()
+        e_pass = ctk.CTkEntry(card, placeholder_text="Contrasenya", show="*",
+                              width=380, height=42, corner_radius=10,
+                              fg_color=C["bg_card2"], border_color=C["border"],
+                              text_color=C["text_main"], font=ctk.CTkFont(size=13))
         e_pass.pack(padx=20, pady=(0, 8))
+
+        # selector de rol amb botons visuals
+        ctk.CTkLabel(card, text="Rol", font=ctk.CTkFont(size=11),
+                     text_color=C["text_sub"]).pack(anchor="w", padx=20, pady=(0, 4))
+
+        _ROLS = [
+            ("admin",    "🔑  Administrador", C["accent"]),
+            ("metge",    "🩺  Metge",         C["accent2"]),
+            ("infermer", "👩‍⚕️  Infermer/a",   C["accent3"]),
+        ]
+        rol_var = ctk.StringVar(value="metge")  # rol seleccionat per defecte
+        rol_frame = ctk.CTkFrame(card, fg_color="transparent")
+        rol_frame.pack(anchor="w", padx=20, pady=(0, 10))
+        rol_btns = {}
+
+        def sel_rol(key):
+            # actualitza l'aparença dels botons segons la selecció
+            rol_var.set(key)
+            for k, b in rol_btns.items():
+                col = next(c for r, _, c in _ROLS if r == k)
+                if k == key:
+                    b.configure(fg_color=col, text_color="#ffffff", border_color=col)
+                else:
+                    b.configure(fg_color=C["bg_card2"], text_color=C["text_sub"],
+                                border_color=C["border"])
+
+        for key, label, color in _ROLS:
+            b = ctk.CTkButton(rol_frame, text=label, width=118, height=36,
+                              corner_radius=9, border_width=1,
+                              fg_color=C["bg_card2"], text_color=C["text_sub"],
+                              border_color=C["border"], font=ctk.CTkFont(size=12),
+                              command=lambda k=key: sel_rol(k))
+            b.pack(side="left", padx=(0, 6))
+            rol_btns[key] = b
+        sel_rol("metge")
 
         sl = _status_lbl(card)
 
         def registrar():
             nom = e_user.get().strip()
             pwd = e_pass.get().strip()
+            rol_sel = rol_var.get()
             if not nom or not pwd:
                 sl.configure(text="⚠️  Tots els camps són obligatoris",
                              text_color=C["accent4"]); return
-            if funcions.proces_registre(nom, pwd):
-                sl.configure(text="✅  Usuari creat correctament",
+            try:
+                import autentificacio
+                hashed = autentificacio.hash_contrasenya(pwd)
+                conn = connectar()
+                with conn.cursor() as cur:
+                    # insereix l'usuari i obté el seu id
+                    cur.execute(
+                        "INSERT INTO seguretat.usuari (username, password) VALUES (%s, %s) RETURNING id_usuari",
+                        (nom, hashed))
+                    id_usuari = cur.fetchone()[0]
+                    # busca l'id del rol seleccionat
+                    cur.execute("SELECT id_rol FROM seguretat.rol WHERE nom = %s", (rol_sel,))
+                    row = cur.fetchone()
+                    if not row:
+                        conn.rollback(); conn.close()
+                        sl.configure(text=f"❌  Rol '{rol_sel}' no trobat a la BD",
+                                     text_color=C["danger"]); return
+                    # assigna el rol a l'usuari
+                    cur.execute(
+                        "INSERT INTO seguretat.usuari_rol (id_usuari, id_rol) VALUES (%s, %s)",
+                        (id_usuari, row[0]))
+                        # No se puede usar %s en DDL, usamos format validando antes
+                    rols_permesos = {'metge', 'infermer', 'admin'}
+                    if rol_sel not in rols_permesos:
+                        raise ValueError(f"Rol no permès: {rol_sel}")
+                    if rol_sel == 'metge':
+                        rol = 'metge_role'
+                    elif rol_sel == 'admin':
+                        rol = 'admin_role'
+                    elif rol_sel == 'infermer':
+                        rol = 'infermer_role'
+                    cur.execute("SELECT dades_per.crear_rol(%s, %s, %s)", (nom, pwd, rol))
+                    conn.commit()
+                conn.close()
+                sl.configure(text=f"✅  Usuari '{nom}' creat com a {rol_sel}",
                              text_color=C["accent3"])
                 e_user.delete(0, "end")
                 e_pass.delete(0, "end")
-            else:
-                sl.configure(text="❌  No s'ha pogut crear l'usuari",
-                             text_color=C["danger"])
+            except Exception as ex:
+                sl.configure(text=f"❌  {ex}", text_color=C["danger"])
 
         ctk.CTkButton(card, text="Crear usuari", command=registrar,
                       fg_color=C["accent"], hover_color=C["accent2"],
@@ -452,6 +507,7 @@ def gestio_usuaris():
                         "UPDATE seguretat.usuari SET password = %s WHERE username = %s",
                         (hashed, nom)
                     )
+                    cur.execute("SELECT dades_per.actualitzar_contrasenya(%s, %s)", (nom, pwd))
                     if cur.rowcount == 0:
                         sl.configure(text="❌  Usuari no trobat", text_color=C["danger"])
                     else:

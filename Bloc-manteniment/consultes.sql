@@ -111,13 +111,15 @@ SELECT p.id_pacient, p.nom, p.cognoms,
 FROM pacient.PACIENT p
 LEFT JOIN pacient.VISITA v
     ON v.id_pacient = p.id_pacient
+LEFT JOIN pacient.recepta_visita rv
+    ON rv.id_visita = v.id_visita
 LEFT JOIN pacient.RECEPTA r
-    ON r.id_visita = v.id_visita
+    ON r.id_recepta = v.id_visita
 LEFT JOIN pacient.linia_recepta lr
     ON lr.id_recepta = r.id_recepta
-LEFT JOIN dades_pre.MEDICAMENT m
+LEFT JOIN dades_per.MEDICAMENT m
     ON m.id_medicament = lr.id_medicament
-LEFT JOIN pacient.INGRESS i
+LEFT JOIN pacient.INGRES i
     ON i.id_pacient = p.id_pacient
 LEFT JOIN pacient.OPERACIO o
     ON o.id_pacient = p.id_pacient
@@ -125,15 +127,30 @@ GROUP BY p.id_pacient, p.nom, p.cognoms;
 
 
 -- opcional3:
-CREATE OR REPLACE VIEW vista_metge_programacio AS
-SELECT m.id_personal AS id_metge, m.nom, m.cognom1, m.cognom2,
-    -- visites
-    COUNT(DISTINCT v.id_visita) AS total_visites,
-    -- operacions programades
-    COUNT(DISTINCT o.id_operacio) AS total_operacions
-FROM METGE m
-LEFT JOIN VISITA v
-    ON v.id_metge = m.id_personal
-LEFT JOIN OPERACIO o
-    ON o.id_metge = m.id_personal
-GROUP BY m.id_personal, m.nom, m.cognom1, m.cognom2;
+CREATE OR REPLACE VIEW dades_per.vista_metge_programacio AS
+SELECT
+    m.id_personal                                                         AS id_metge,
+    p_metge.nom                                                           AS nom_metge,
+    p_metge.cognom1                                                       AS cognom1_metge,
+    p_metge.cognom2                                                       AS cognom2_metge,
+    COALESCE(DATE(v.data), DATE(o.data))                  AS dia,
+    CASE
+        WHEN v.id_visita   IS NOT NULL THEN 'Visita'
+        WHEN o.id_operacio IS NOT NULL THEN 'Operació'
+    END                                                                   AS tipus,
+    COALESCE(v.data::TIME, o.data::TIME)::time(0)                 AS hora,
+    CONCAT(p_pac.nom, ' ', p_pac.cognoms)                                 AS pacient
+FROM dades_per.personal p_metge
+JOIN dades_per.METGE m
+    ON m.id_personal = p_metge.id_personal
+JOIN pacient.PACIENT p_pac
+    ON p_pac.id_pacient IS NOT NULL
+LEFT JOIN pacient.VISITA v
+    ON v.id_pacient = p_pac.id_pacient
+    AND v.id_metge = m.id_personal
+LEFT JOIN pacient.OPERACIO o
+    ON o.id_pacient = p_pac.id_pacient
+    AND o.id_metge = m.id_personal
+WHERE v.id_metge = m.id_personal
+   OR o.id_metge = m.id_personal
+ORDER BY m.id_personal, dia, hora;

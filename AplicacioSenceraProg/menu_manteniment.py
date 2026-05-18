@@ -367,7 +367,10 @@ def _panel_historial(parent):
             box.insert("end",
                 f"Pacient:     {r.get('nom','')} {r.get('cognoms','')}\n"
                 f"Visites:     {r.get('total_visites','—')}\n"
-                f"Diagnòstics: {r.get('diagnostics','—')}\n")
+                f"Diagnòstics: {r.get('diagnostics','—')}\n"
+                f"Medicaments:     {r.get('medicaments_receptats','—')}\n"
+                f"Ingressos:     {r.get('total_ingressos','—')}\n"
+                f"Operacions:     {r.get('total_operacions','—')}\n")
         except Exception as ex:
             _err(sl, str(ex))
 
@@ -376,32 +379,44 @@ def _panel_historial(parent):
 
 def _panel_programacio(parent):
     _lbl(parent, "Programació Metges", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
-    sl = ctk.CTkLabel(parent, text="", font=("Arial", 11), text_color=MUTED)
-    sl.pack(anchor="w", padx=16, pady=(0, 6))
+    _lbl(parent, "Consulta les visites i operacions d'un metge per dia", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 8))
+
+    card = ctk.CTkFrame(parent, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
+    card.pack(fill="x", padx=16)
+    _section(card, "Cerca per metge", "📅")
+
+    e = _field(card, "ID Metge", "Introdueix l'identificador del metge")
+    sl = _status(card)
 
     box = _textbox(parent, height=280)
-    box.pack(padx=16, fill="x")
+    box.pack(padx=16, pady=(8, 16), fill="x")
 
-    def cargar():
+    def cercar():
         box.delete("1.0", "end")
-        box.insert("end", f"{'Metge':<28}{'Visites':<12}{'Operacions'}\n{'─'*56}\n")
+        id_metge = e.get().strip()
+        if not id_metge:
+            _err(sl, "Introdueix un ID de metge"); return
         try:
             conn = connectar()
-            dades = consultes.consultar_programacio_metge(conn)
+            dades = consultes.consultar_programacio_metge_id(conn, id_metge)
             conn.close()
             if not dades:
-                box.insert("end", "No hi ha dades disponibles.\n")
-            else:
-                for m in dades:
-                    nom = f"{m.get('nom','')} {m.get('cognom1','')}"
-                    box.insert("end", f"{nom:<28}{str(m.get('total_visites','0')):<12}{m.get('total_operacions','0')}\n")
-            _ok(sl, f"✓  {len(dades) if dades else 0} metges carregats")
+                _err(sl, "No s'han trobat dades per aquest metge"); return
+
+            # Capçalera
+            box.insert("end", f"{'Data':<14}{'Tipus':<14}{'Hora':<12}{'Pacient'}\n{'─'*60}\n")
+            for r in dades:
+                box.insert("end",
+                    f"{str(r.get('dia','')):<14}"
+                    f"{str(r.get('tipus','')):<14}"
+                    f"{str(r.get('hora','')):<12}"
+                    f"{r.get('pacient','')}\n"
+                )
+            _ok(sl, f"✓  {len(dades)} registres trobats")
         except Exception as ex:
             _err(sl, str(ex))
 
-    _btn(parent, "🔄  Actualitzar", cargar, width=200).pack(padx=16, pady=(8, 0), anchor="w")
-    cargar()
-
+    _btn(card, "🔍  Cercar", cercar).pack(padx=16, pady=(4, 16))
 def _panel_exportacio(parent):
 
     _lbl(parent, "Exportació de Dades", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
@@ -555,7 +570,7 @@ def _panel_dummy(parent):
 
         def worker():
             try:
-                from moduls.dummy_data import generar_dummy_data, eliminar_dummy_data
+                from AplicacioSenceraProg.dummy_data import generar_dummy_data, eliminar_dummy_data
                 tasca = generar_dummy_data if tasca_nom == "generar" else eliminar_dummy_data
                 resultat = tasca()
                 parent.after(0, lambda: bar.stop())

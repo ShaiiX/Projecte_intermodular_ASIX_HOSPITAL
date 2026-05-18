@@ -101,15 +101,19 @@ def consultar_opcional_habitacio(conn, id_hab):
 
 def consultar_opcional_historial(conn, id_pac):
     with conn.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute("SELECT * FROM vista_pacient_historial WHERE id_pacient = %s", (id_pac,))
+        cur.execute("SELECT * FROM pacient.vista_pacient_historial WHERE id_pacient = %s", (id_pac,))
         return cur.fetchone()
     
-def consultar_programacio_metge(conn):
-    """Retorna la carga de trabajo (visitas y operaciones) de cada médico."""
-    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        query = "SELECT * FROM vista_metge_programacio ORDER BY cognom1 ASC;"
-        cur.execute(query)
-        return cur.fetchall()
+def consultar_programacio_metge_id(conn, id_metge):
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    query = """
+        SELECT * FROM dades_per.vista_metge_programacio
+        WHERE id_metge = %s
+          AND dia = CURRENT_DATE
+        ORDER BY hora
+    """
+    cursor.execute(query, (id_metge,))
+    return cursor.fetchall()
 
 # informes
 

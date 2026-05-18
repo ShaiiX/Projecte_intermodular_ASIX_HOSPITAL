@@ -213,8 +213,6 @@ CREATE TABLE dades_per.MEDICAMENT (
 
 CREATE TABLE pacient.RECEPTA(
     id_recepta SERIAL PRIMARY KEY,
-    id_pacient INT REFERENCES pacient.PACIENT(id_pacient),
-    id_metge INT REFERENCES dades_per.METGE(id_personal),
     data DATE,
     descripcio TEXT,
     import_total NUMERIC
@@ -236,6 +234,11 @@ CREATE TABLE pacient.RECEPTA_VISITA(
     PRIMARY KEY (id_recepta, id_visita)
 );
 
+CREATE TABLE pacient.RECEPTA_INGRES(
+    id_recepta INT REFERENCES pacient.RECEPTA(id_recepta),
+    id_ingres INT REFERENCES pacient.INGRES(id_ingres),
+    PRIMARY KEY (id_recepta, id_ingres)
+);
 
 -- cantina
 CREATE TABLE cantina.EMPRESA_EXTERNA (
