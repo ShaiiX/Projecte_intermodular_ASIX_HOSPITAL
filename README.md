@@ -1,7 +1,7 @@
 # Projecte_intermodular_ASIX_HOSPITAL
 
 <p align="center">
-  <img src="./HospiVibeLogoPNG.png" alt="HospiVibe Logo" width="300">
+  <img src="./Planificacio/HospiVibeLogo.png" alt="HospiVibe Logo" width="300">
 </p>
 
 ## Membres
