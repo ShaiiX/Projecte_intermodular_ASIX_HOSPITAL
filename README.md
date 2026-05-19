@@ -1,6 +1,8 @@
 # Projecte_intermodular_ASIX_HOSPITAL
 
-![HospiVibe](../../HospiVibeLogo.png)
+<p align="center">
+  <img src="./HospiVibeLogoPNG.png" alt="HospiVibe Logo" width="300">
+</p>
 
 ## Membres
 - Arnau Farreras
