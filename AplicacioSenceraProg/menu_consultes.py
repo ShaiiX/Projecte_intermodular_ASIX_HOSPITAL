@@ -1,9 +1,8 @@
-import customtkinter as ctk
-from psycopg2.extras import RealDictCursor
-from db import connectar
-from consultes import informe_planta, informe_personal, informe_visites_dia, ranking_metges
+import customtkinter as ctk #importem el customtkinter per al menu grafic
+from db import connectar #importem la conexio amb la base de dades
+from consultes import informe_planta, informe_personal, informe_visites_dia, ranking_metges #importem les consultes necesaries de consultes.py
 
-# ── Paleta ────────────────────────────────────────────────────────────────────
+#paleta de colors del menu
 BG      = "#0d1422"
 SIDEBAR = "#0a1120"
 CARD    = "#131f32"
@@ -21,7 +20,7 @@ TEXT2   = "#e0e8ff"
 SUB     = "#8ca0c4"
 MUTED   = "#4a6080"
 
-
+#funcio basica on es crearan els lbl de l'aplicatiu, com s'utilitza molt sera una funcio
 def _lbl(parent, text, size=12, bold=False, color=None, **kw):
     return ctk.CTkLabel(parent, text=text, text_color=color or TEXT2,
                         font=("Arial", size, "bold" if bold else "normal"), **kw)
@@ -29,36 +28,23 @@ def _lbl(parent, text, size=12, bold=False, color=None, **kw):
 def _sep(parent):
     ctk.CTkFrame(parent, fg_color=BORDER, height=1).pack(fill="x", padx=16, pady=(8, 10))
 
+#funcio per a indicar que l'element a crear es una "seccio"
 def _section(parent, text, icon=""):
     f = ctk.CTkFrame(parent, fg_color="transparent")
     f.pack(fill="x", padx=16, pady=(14, 0))
     _lbl(f, f"{icon}  {text}" if icon else text, size=13, bold=True, color=SUB).pack(side="left")
     _sep(parent)
 
+#funcio per a indicar que un element es un textbox, es repetira bastant
 def _textbox(parent, width=500, height=260):
     return ctk.CTkTextbox(parent, width=width, height=height,
                           fg_color=SIDEBAR, text_color=TEXT2,
                           font=("Courier New", 11), corner_radius=8,
                           border_width=1, border_color=BORDER)
 
-def _btn_selector(parent, text, cmd, active_btn):
-    b = ctk.CTkButton(parent, text=text, width=0, height=32,
-                      fg_color=CARD, hover_color=CARD2, text_color=SUB,
-                      border_color=BORDER, border_width=1,
-                      corner_radius=7, font=("Arial", 11))
-    def activate():
-        if active_btn[0]:
-            active_btn[0].configure(fg_color=CARD, text_color=SUB, border_color=BORDER)
-        b.configure(fg_color=CARD2, text_color=ACCENT, border_color=ACCENT)
-        active_btn[0] = b
-        cmd()
-    b.configure(command=activate)
-    b.pack(side="left", padx=(0, 6))
-    return b, activate
 
-
-# ── Panells ───────────────────────────────────────────────────────────────────
-
+# panells a mostrar a la part esquerra del menu:
+# panel amb la informacio de la planta selecionada:
 def _panel_info_planta(parent):
     _lbl(parent, "Informació de la Planta", size=18, bold=True).pack(
         anchor="w", padx=16, pady=(16, 2))
@@ -88,12 +74,16 @@ def _panel_info_planta(parent):
     result_frame.columnconfigure((0, 1, 2, 3), weight=1)
 
     stat_cards = {}
+
+    #indiquem les dades que es volen mostrar
     defs = [
         ("num_planta",        "🏥", "Planta",       TEXT,  ACCENT),
         ("total_habitacions", "🛏️", "Habitacions",  TEXT,  TEAL),
         ("total_quirofans",   "🔪", "Quiròfans",    TEXT,  AMBER),
         ("total_infermeria",  "👩‍⚕️", "Infermers",  TEXT,  GREEN),
     ]
+
+    #les mostrem
     for col, (key, icon, label, tc, color) in enumerate(defs):
         c = ctk.CTkFrame(result_frame, fg_color=CARD, corner_radius=12,
                          border_width=1, border_color=BORDER)
@@ -104,6 +94,7 @@ def _panel_info_planta(parent):
         _lbl(c, label, size=10, color=MUTED).pack(pady=(0, 12))
         stat_cards[key] = val
 
+    #consultem a la base de dades les dades demanades desde el consultes.py
     def consultar():
         try:
             conn = connectar()
@@ -124,7 +115,7 @@ def _panel_info_planta(parent):
                   corner_radius=8, font=("Arial", 12, "bold"),
                   text_color="#ffffff").pack(padx=16, pady=(8, 16))
 
-
+#panell per a la mostra de tot el personal
 def _panel_personal(parent):
     _lbl(parent, "Tot el Personal", size=18, bold=True).pack(
         anchor="w", padx=16, pady=(16, 2))
@@ -139,6 +130,7 @@ def _panel_personal(parent):
     box.insert("end", f"{'ID':<6}{'Nom':<40}{'DNI':<13}{'DATA NAIXEMENT':<18}{'Email':<18}{'Telèfon':<14}{'Direcció':<30}{'Baixa'}\n")
     box.insert("end", "─" * 200 + "\n")
 
+    #extreurem les dades de ka base de dades amb la funcio de consultes.py
     try:
         conn = connectar()
         dades = informe_personal(conn)
@@ -158,7 +150,7 @@ def _panel_personal(parent):
     except Exception as ex:
         sl.configure(text=f"✗  {ex}", text_color=DANGER)
 
-
+#panell per a mostrar les visites que hi han hagut cada dia, si es que n'hi ha.
 def _panel_visites(parent):
     _lbl(parent, "Visites per Data", size=18, bold=True).pack(
         anchor="w", padx=16, pady=(16, 2))
@@ -171,6 +163,7 @@ def _panel_visites(parent):
     box = _textbox(parent, height=360)
     box.pack(padx=16, fill="x")
 
+    #carregarem les dades desde la base de dades i la mostrarem dins del textbox.
     def carregar():
         box.delete("1.0", "end")
         box.insert("end", f"{'Data':<18}{'Total visites'}\n{'─'*36}\n")
@@ -190,7 +183,7 @@ def _panel_visites(parent):
                   text_color="#ffffff").pack(padx=16, pady=(0, 10), anchor="w")
     carregar()
 
-
+#panell per a mostrar el ranking de metges, qui ha ates mes pacients:
 def _panel_ranking(parent):
     _lbl(parent, "Rànquing de Metges", size=18, bold=True).pack(
         anchor="w", padx=16, pady=(16, 2))
@@ -203,6 +196,7 @@ def _panel_ranking(parent):
     box = _textbox(parent, height=360)
     box.pack(padx=16, fill="x")
 
+    #carregarem les dades proporcionades gracies a la vista i les afegirem dins del textbox a mostrar
     def carregar():
         box.delete("1.0", "end")
         box.insert("end", f"{'#':<5}{'Metge':<32}{'Pacients atesos'}\n{'─'*52}\n")
@@ -219,6 +213,7 @@ def _panel_ranking(parent):
         except Exception as ex:
             sl.configure(text=f"✗  {ex}", text_color=DANGER)
 
+    #boto per a actualitzar les dades, per si es necesari.
     ctk.CTkButton(parent, text="🔄  Actualitzar", command=carregar,
                   fg_color=ACCENT, hover_color=ACCH, width=180, height=36,
                   corner_radius=8, font=("Arial", 12, "bold"),
@@ -226,7 +221,7 @@ def _panel_ranking(parent):
     carregar()
 
 
-# ── Finestra principal ────────────────────────────────────────────────────────
+# consultes principals, aquestes son els menus principals del programa amb la seva funcio per a obrir el seu apartat
 _CONSULTES = [
     ("Info Planta",      "🏢", _panel_info_planta),
     ("Tot el Personal",  "👥", _panel_personal),
@@ -234,7 +229,7 @@ _CONSULTES = [
     ("Rànquing Metges",  "🏆", _panel_ranking),
 ]
 
-
+#funcio que al menu inicial s'obrira, aquest obrira un menu extern amb les dades pertinents
 def obrir_consultes():
     ctk.set_appearance_mode("dark")
     win = ctk.CTkToplevel()
@@ -245,7 +240,7 @@ def obrir_consultes():
     win.lift()
     win.focus_force()
 
-    # Topbar
+    # barra superior
     topbar = ctk.CTkFrame(win, fg_color=SIDEBAR, corner_radius=0, height=52)
     topbar.pack(fill="x")
     topbar.pack_propagate(False)
@@ -256,23 +251,25 @@ def obrir_consultes():
                   width=90, height=30, corner_radius=7,
                   font=("Arial", 11)).pack(side="right", padx=16, pady=11)
 
-    # Layout
+    #layout, com es reparteix el menu
     main = ctk.CTkFrame(win, fg_color="transparent")
     main.pack(fill="both", expand=True)
 
-    # Sidebar
+    #barra lateral, per al selector de consultes
     sidebar = ctk.CTkFrame(main, fg_color=SIDEBAR, corner_radius=0, width=200)
     sidebar.pack(side="left", fill="y")
     sidebar.pack_propagate(False)
     ctk.CTkLabel(sidebar, text="INFORMES", font=("Arial", 9, "bold"),
                  text_color=MUTED).pack(anchor="w", padx=16, pady=(16, 6))
 
-    # Àrea de contingut
+    #area del contingut, on van les dades...
     content_area = ctk.CTkScrollableFrame(main, fg_color=BG, corner_radius=0)
     content_area.pack(side="left", fill="both", expand=True)
 
+    #indiquem el boto actiu, ara es cap
     active_btn = [None]
 
+    #funcio per a carregar el panell indicat, 
     def carregar_panel(build_fn, btn):
         if active_btn[0]:
             active_btn[0].configure(fg_color="transparent", text_color=SUB)
@@ -281,7 +278,8 @@ def obrir_consultes():
         for w in content_area.winfo_children():
             w.destroy()
         build_fn(content_area)
-
+    
+    #per cada boto indicat a les consultes ho afegirem a un llistat que al apretar aquell boto carregara les dades de aquell panell
     sidebar_btns = []
     for nom, icon, build_fn in _CONSULTES:
         btn = ctk.CTkButton(

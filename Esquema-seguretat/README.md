@@ -209,23 +209,15 @@ Així poder evitar l'accés no autoritzat, informació filtrada i la manipulaci�
 Els logs serveixen per a tenir coneixement sobre el que es fa a la base de dades.
 Es separara en dues parts:
 
-- Els logs per als backups, aquest son logs per a tenir access i coneixement el cas del que falli la base de dades,         aquestes es faran copies en altres discs durs, per si el cas de que es cremi o altre inconvenient en el servidor, aquests logs serveixen que al fer el backup inicial poguem recuperar les dades durant el temps del backup i la hora de la fallada.
+- Els logs per als backups, aquest son logs per a tenir access i coneixement el cas del que falli la base de dades, aquestes es faran copies en altres discs durs, per si el cas de que es cremi o altre inconvenient en el servidor, aquests logs serveixen que al fer el backup inicial poguem recuperar les dades durant el temps del backup i la hora de la fallada.
 
 Aquest logs seràn basicament WAL, es un sistema que a més de replica dades en altres servidors, que s'utilitzarà mes endavant, permet guardar les comandes i així tenir unes copies continues en cas de perdua.
 
-- La segona part es sobre tenir coneixement del que es fa, per a seguretat i auditoria, es guarda dins la base de dades, per a tenir access directe i facil desde la aplicació o exportació si es el cas, si es fa un Import, Update o Delete que es repeteix molt, encomptes de guardar totes les dades hi haura una libreria per a no repetir el texte complert de la consulta.
-
-Primerament s'ha d'activar en el postgresql.conf la seguent configuracio:
-Serveix per a carregar una extensio de postgresql al iniciar el servidor que el que fa es normalitzar una query que es pot arribar a repetir sempre, com casi tots els canvis es faran desde l'aplicatiu sera mes simple de tenir un control sombre les dades desde l'aplicatiu tenint-ho de forma normalitzada aprofitant espai.
-
-De igual forma que el anon:
-```
-shared_preload_libraries = 'pg_stat_statements'
-```
+- La segona part es sobre tenir coneixement del que es fa, per a seguretat i auditoria, es guarda dins la base de dades, per a tenir access directe i facil desde la aplicació o exportació si es el cas, si es fa un Import, Update o Delete que es repeteix molt, encomptes de guardar totes les dades s'haura de normalitzar aquestes mateixes consultes.
 
 Un cop això ja es pot indicar el trigger, que es trova a Triggers/LOG_AUDITORIA.sql.
 
-Perque no s'utilitza directament el pg_stat_statements? 
+Perque no s'utilitza directament el pg_stat_statements, que fa la mateixa funció? 
 - Es volatil, vol dir que aquesta informacio si es reinicia el servidor o altres inconvenients pot arrivar a sobrecargar sistema si es el cas o perdre el registre de les comandes.
 - No es massa organitzat i es mes complicat de trobar-ho.
 
@@ -238,16 +230,5 @@ On cada inici obtindra l'identificador de l'usuari i ho afegira com a registre d
 
 Per a indicar i mantenir l'activiat de l'usuari, on cada acció que faci l'usuari al sistema amb la base de dades s'haura de actualitzar el registre:
 ```
-UPDATE usuaris SET ultima_activitat = NOW(), actiu = TRUE WHERE id = idusuari;
-```
-### Usuari
-Com es pot veure a la base de dades hi ha incorporat si l'usuari esta actiu o no, com només anem amb postgresql, seria millor fer-ho amb redis o altres sistemes, ja que s'actualitzaran dades cada poc temps per a tenir controlada la activitat de l'usuari, però per a fer-ho de forma que funcioni amb el sistema actual i base de dades seria s'aquesta forma:
-
-- Anteriorment he mostrat com indicar que l'usuari esta actiu, ja que el login es un process obligatori, així que es sap que esat actiu l'usuari.
-
-Per indicar si l'usuari no esta actiu es fara de dues formes, el [logoff voluntari](./logs/usuaris/Logoff_voluntari.sql), que seria el logoff de l'aplicació de forma manual i altre de [logoff timeout](./logs/usuaris/Logoff_timeout.sql), basicament que despres de un temps (per exemple 5 minuts) es comprova si ha pasat uns minuts indicats de la ultima activitat de l'usuari. On també s'indicara en la aplicacio si l'usuari esta actiu o no per a que torni a iniciar sesio dins del .py.
-
-Per activar automaticament el logoff de timeout sera una tasca del cron que s'activa cada 5 minuts amb l'usuari administrador de postgresql:
-```
-*/5 * * * * psql -U usuari -d base_de_dades -c "CALL tancar_sessions_expirades();" <-- la funcio dins del sql del logoff
+UPDATE usuaris SET ultima_activitat = NOW() WHERE id = idusuari;
 ```

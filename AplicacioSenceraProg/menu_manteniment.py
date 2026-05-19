@@ -1,17 +1,16 @@
-import customtkinter as ctk
-from tkinter import messagebox
-from tkcalendar import DateEntry
-from datetime import date
-from db import connectar
-import consultes
+import customtkinter as ctk #importem el customtkinter per al menu grafic
+from tkcalendar import DateEntry #importem la entrada de dates, un selector per a entrar coma dada la data de forma mes simple
+from db import connectar #importem la conexió amb la base de dades
+import consultes #importem el .py de consultes
+import json #importem json per a l'exportació de dades en json
 
-import json
+# de igual forma amb el xml, per a l'exportació de dades:
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from tkinter import filedialog
 
 
-# ── Paleta ────────────────────────────────────────────────────────────────────
+# paleta de colors del menu:
 BG      = "#0d1422"
 SIDEBAR = "#0a1120"
 CARD    = "#131f32"
@@ -31,11 +30,13 @@ TEXT2   = "#e0e8ff"
 SUB     = "#8ca0c4"
 MUTED   = "#4a6080"
 
-# ── Helpers de widgets ────────────────────────────────────────────────────────
+#funcions per a facilitar la generacio del menu:
+#primer per a generar un label gracies a la funcio amb dades predefinides
 def _lbl(parent, text, size=12, bold=False, color=None, **kw):
     return ctk.CTkLabel(parent, text=text, text_color=color or TEXT2,
                         font=("Arial", size, "bold" if bold else "normal"), **kw)
 
+#generar un entry amb dades predefinides
 def _entry(parent, placeholder="", show=None, width=340):
     kw = dict(placeholder_text=placeholder, width=width, height=36,
               corner_radius=7, fg_color=SIDEBAR, border_color=BORDER2,
@@ -44,48 +45,56 @@ def _entry(parent, placeholder="", show=None, width=340):
     if show: kw["show"] = show
     return ctk.CTkEntry(parent, **kw)
 
+#de igual forma amb el boto
 def _btn(parent, text, cmd, color=ACCENT, hover=ACCH, width=320):
     return ctk.CTkButton(parent, text=text, command=cmd,
                          fg_color=color, hover_color=hover,
                          width=width, height=38, corner_radius=8,
                          font=("Arial", 12, "bold"), text_color="#ffffff")
 
+#canviar el boto de color a vermell
 def _btn_danger(parent, text, cmd, width=320):
     return _btn(parent, text, cmd, color=DANGER, hover=DANGERH, width=width)
 
+#per a crear la seccio de dades, tant com mostrar o inserir-hi
 def _sep(parent):
     ctk.CTkFrame(parent, fg_color=BORDER, height=1).pack(fill="x", padx=16, pady=(8, 10))
-
 def _section(parent, text, icon=""):
     f = ctk.CTkFrame(parent, fg_color="transparent")
     f.pack(fill="x", padx=16, pady=(14, 0))
     _lbl(f, f"{icon}  {text}" if icon else text, size=13, bold=True, color=SUB).pack(side="left")
     _sep(parent)
 
+# per a crear de forma facil de forma conjunta el lbl i entry de algunes dades dels menus.
 def _field(parent, label, placeholder="", show=None, width=340):
     _lbl(parent, label, size=11, color=MUTED).pack(anchor="w", padx=16, pady=(6, 0))
     e = _entry(parent, placeholder, show, width)
     e.pack(padx=16, pady=(2, 0))
     return e
 
+#label per a mostrar errors o esdeveniments dins el programa
 def _status(parent):
     l = ctk.CTkLabel(parent, text="", font=("Arial", 11),
                      text_color=GREEN, wraplength=400, justify="left")
     l.pack(anchor="w", padx=16, pady=(6, 12))
     return l
 
+#funcio per a mostrar que s'ha fet de forma correcte
 def _ok(lbl, msg="✓  Operació completada"):
     lbl.configure(text=msg, text_color=GREEN)
 
+#funcio per a mostrar que no s'ha fet de forma correcte
 def _err(lbl, msg):
     lbl.configure(text=f"✗  {msg}", text_color=DANGER)
 
+#funcio per a generar un textbox
 def _textbox(parent, width=500, height=220):
     return ctk.CTkTextbox(parent, width=width, height=height,
                           fg_color=SIDEBAR, text_color=TEXT2,
                           font=("Courier New", 11), corner_radius=8,
                           border_width=1, border_color=BORDER)
 
+#funcio per a crear un entry de una data
 def _cal(parent):
     return DateEntry(parent, date_pattern="yyyy-mm-dd",
                      background=CARD, foreground=TEXT2,
@@ -93,8 +102,9 @@ def _cal(parent):
                      selectbackground=ACCENT, font=("Arial", 11))
 
 
-# ── Panells de contingut ──────────────────────────────────────────────────────
 
+#panells amb continguts
+#panell de alta pacient, demana dades generals dels pacients i els afegeix dins la base de dades
 def _panel_alta_pacient(parent):
     scroll = ctk.CTkFrame(parent, fg_color="transparent", corner_radius=0)
     scroll.pack(fill="both", expand=True)
@@ -106,6 +116,7 @@ def _panel_alta_pacient(parent):
     card.pack(fill="x", padx=16, pady=(0, 16))
     _section(card, "Dades del pacient", "👤")
 
+    #aquests son els camps importants dels pacients
     camps = [("Nom", "Nom del pacient"), ("Cognoms", "Cognoms complets"),
              ("Telèfon", "Ex: 612 345 678"), ("Email", "exemple@correu.cat"),
              ("DNI", "Ex: 12345678A"), ("Data Naixement", "YYYY-MM-DD"),
@@ -113,6 +124,7 @@ def _panel_alta_pacient(parent):
     entries = [_field(card, lbl, ph) for lbl, ph in camps]
     sl = _status(card)
 
+    #guardarem les dades gracies a la alta del pacient dins de consultes.py
     def guardar():
         vals = [e.get().strip() for e in entries]
         if any(v == "" for v in vals):
@@ -128,8 +140,9 @@ def _panel_alta_pacient(parent):
 
     _btn(card, "💾  Guardar pacient", guardar).pack(padx=16, pady=(4, 16))
 
-
+#panell de alta personal
 def _panel_alta_personal(parent):
+    #com hi ha diferent tipus de personal, es demanaran dades diferents:
     _TIPUS_CAMPS = {
         "Metge":               [("Especialitat","Ex: Cardiologia"),("Currículum","Resum professional"),("Núm. Col·legiat","COL-12345")],
         "Infermer Planta":     [("Torn (M/T/N)","M=Matí T=Tarda N=Nit"),("Anys Experiència","Ex: 5"),("ID Planta","Num. planta")],
@@ -140,6 +153,7 @@ def _panel_alta_personal(parent):
         "Metge":"metge","Infermer Planta":"infermer_planta",
         "Infermer Metge":"infermer_metge","Vari/Administratiu":"vari",
     }
+
 
     scroll = ctk.CTkFrame(parent, fg_color="transparent", corner_radius=0)
     scroll.pack(fill="both", expand=True)
@@ -152,7 +166,7 @@ def _panel_alta_personal(parent):
     cols.columnconfigure(0, weight=1)
     cols.columnconfigure(1, weight=1)
 
-    # Columna esquerra
+    #columna de l'esquerra amb les dades per defecte que tenen tots els personals
     c_esq = ctk.CTkFrame(cols, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
     c_esq.grid(row=0, column=0, padx=(0, 6), sticky="nsew")
     _section(c_esq, "Dades personals", "👤")
@@ -163,7 +177,7 @@ def _panel_alta_personal(parent):
     ]
     entries_comuns = [_field(c_esq, lbl, ph, width=260) for lbl, ph in comuns_defs]
 
-    # Columna dreta
+    #columna de la dreta, aquesta comporta informació de les dades especifiques de cada tipus de personal
     c_drt = ctk.CTkFrame(cols, fg_color=CARD, corner_radius=12, border_width=1, border_color=BORDER)
     c_drt.grid(row=0, column=1, padx=(6, 0), sticky="nsew")
     _section(c_drt, "Tipus de personal", "🩺")
@@ -180,6 +194,7 @@ def _panel_alta_personal(parent):
     extra_frame.pack(fill="x")
     extra_entries = []
 
+    #funcio per a actualitzar les dades especifiques si es canvia el tipus de personal
     def rebuild(*_):
         for w in extra_frame.winfo_children(): w.destroy()
         extra_entries.clear()
@@ -191,6 +206,7 @@ def _panel_alta_personal(parent):
 
     sl = _status(scroll)
 
+    #funcio per a guardar amb la conexió a la base de dades i la funcio de consultes.py
     def guardar():
         comuns = [e.get().strip() for e in entries_comuns]
         extras = [e.get().strip() for e in extra_entries]
@@ -207,6 +223,7 @@ def _panel_alta_personal(parent):
     _btn(scroll, "💾  Guardar personal", guardar).pack(padx=16, pady=(8, 16))
 
 
+#panell per a observar la dependencia de l'infermer
 def _panel_dependencia(parent):
     _lbl(parent, "Dependència Infermeria", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
     _lbl(parent, "Comprova a quin metge o planta està assignat un infermer", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 8))
@@ -217,6 +234,7 @@ def _panel_dependencia(parent):
     e = _field(card, "ID Infermer/a", "Introdueix l'identificador")
     sl = _status(card)
 
+    #es comprova gracies a la vista a la base de dades i depenent del resultat es mostra un o altre tipus, si es que hi ha.
     def check():
         try:
             conn = connectar()
@@ -238,6 +256,7 @@ def _panel_dependencia(parent):
     _btn(card, "🔍  Verificar", check).pack(padx=16, pady=(4, 16))
 
 
+#panell de operacions, es tracta de un panell per a mostrar les operacions que hi ha hagut aquell dia.
 def _panel_operacions(parent):
     _lbl(parent, "Operacions per dia", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
 
@@ -252,6 +271,7 @@ def _panel_operacions(parent):
     box = _textbox(parent, height=200)
     box.pack(padx=16, pady=(8, 16), fill="x")
 
+    #un cop s'extreuen les dades de la consulta es mostraran en el textbox indicant quirofan, pacient, hora.
     def executar():
         box.delete("1.0", "end")
         box.insert("end", f"{'Hora':<12}{'Quiròfan':<18}{'Pacient'}\n{'─'*60}\n")
@@ -268,6 +288,7 @@ def _panel_operacions(parent):
     _btn(card, "🔍  Consultar operacions", executar).pack(padx=16, pady=(0, 16))
 
 
+#panell de visites es tracta per a observar les visites del dia indicat
 def _panel_visites(parent):
     _lbl(parent, "Visites per dia", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
 
@@ -282,6 +303,7 @@ def _panel_visites(parent):
     box = _textbox(parent, height=200)
     box.pack(padx=16, pady=(8, 16), fill="x")
 
+    #extreurem les dades gracies a la consulta dins de consultes.py i mostrarem la hora, pacient i metge.
     def executar():
         box.delete("1.0", "end")
         box.insert("end", f"{'Hora':<12}{'Pacient':<28}{'Metge'}\n{'─'*60}\n")
@@ -298,6 +320,7 @@ def _panel_visites(parent):
     _btn(card, "🔍  Consultar visites", executar).pack(padx=16, pady=(0, 16))
 
 
+# panell de invertat, per a observar els aparells que te cada quirofan.
 def _panel_inventari(parent):
     _lbl(parent, "Inventari Aparells", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
     sl = ctk.CTkLabel(parent, text="Carregant...", font=("Arial", 11), text_color=MUTED)
@@ -317,7 +340,7 @@ def _panel_inventari(parent):
     except Exception as ex:
         _err(sl, str(ex))
 
-
+# panell de habitacions, serveix per a osbervar els ingressos que hi ha i hi ha hagut 
 def _panel_habitacio(parent):
     _lbl(parent, "Habitacions", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
 
@@ -345,6 +368,8 @@ def _panel_habitacio(parent):
     _btn(card, "🔍  Consultar", cercar).pack(padx=16, pady=(4, 16))
 
 
+#panell de historial, indicant l'identificador del pacient observarem el total de visites, 
+# els seus diagnostics, medicaments, total de ingressos i el total de les seves operacions
 def _panel_historial(parent):
     _lbl(parent, "Historial Pacient", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
 
@@ -377,6 +402,8 @@ def _panel_historial(parent):
     _btn(card, "🔍  Veure historial", cercar).pack(padx=16, pady=(4, 16))
 
 
+#panell de programacio, de la data d'acui segun el metge indicat es podra observar les seves visites i operacions amb l'hora i pacient
+#així també facilitara la seva forma de estructurar la seva agenda
 def _panel_programacio(parent):
     _lbl(parent, "Programació Metges", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
     _lbl(parent, "Consulta les visites i operacions d'un metge per dia", size=11, color=MUTED).pack(anchor="w", padx=16, pady=(0, 8))
@@ -417,6 +444,9 @@ def _panel_programacio(parent):
             _err(sl, str(ex))
 
     _btn(card, "🔍  Cercar", cercar).pack(padx=16, pady=(4, 16))
+
+#panell de exportacio, es un menu on es pot seleccionar de que data a data s'exportaran les visites que estan a la base de dades
+# en un json o xml, com es vulgui, per a importar-ho a serveis externs.
 def _panel_exportacio(parent):
 
     _lbl(parent, "Exportació de Dades", size=18, bold=True).pack(anchor="w", padx=16, pady=(16, 2))
@@ -460,6 +490,8 @@ def _panel_exportacio(parent):
 
         for r in dades:
 
+            #aquest seria el la seva forma en json:
+            #es pot verue l'esquema a visites.schema.json
             resultat.append({
                 "id_visita": r[0],
                 "dia": str(r[1]),
@@ -497,12 +529,14 @@ def _panel_exportacio(parent):
         except Exception as ex:
             _err(sl, str(ex))
 
+    #exportacio en xml
     def exportar_xml():
 
         try:
 
             dades = obtenir_dades()
 
+            #creació del xml, amb els seus elements i subelements
             root = ET.Element("visites")
 
             for visita in dades:
@@ -545,8 +579,8 @@ def _panel_exportacio(parent):
 
     _btn(card, "📰 Exportar XML", exportar_xml, width=420).pack(padx=16, pady=(0, 16))
 
-#
 
+#panell de dummy data, per a inserir dades no reals a la base de dades per a fer proves, també es podra borrar aquestes dades per si es el cas
 def _panel_dummy(parent):
     import threading
 
@@ -570,7 +604,8 @@ def _panel_dummy(parent):
 
         def worker():
             try:
-                from AplicacioSenceraProg.dummy_data import generar_dummy_data, eliminar_dummy_data
+                from dummy_data import generar_dummy_data, eliminar_dummy_data #improtarem les funcions del dummy data
+                #generarem o eliminarem les dades com sigui el cas:
                 tasca = generar_dummy_data if tasca_nom == "generar" else eliminar_dummy_data
                 resultat = tasca()
                 parent.after(0, lambda: bar.stop())
@@ -578,7 +613,7 @@ def _panel_dummy(parent):
                 parent.after(0, lambda: _ok(sl, f"✓  {resultat}"))
             except Exception as ex:
                 parent.after(0, lambda: bar.stop())
-                parent.after(0, lambda: _err(sl, str(ex)))
+                parent.after(0, lambda e=ex: _err(sl, str(e)))
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -586,7 +621,7 @@ def _panel_dummy(parent):
     _btn_danger(card, "🗑  Eliminar dummy data", lambda: executar("eliminar", "Eliminant..."), width=440).pack(padx=16, pady=(0, 16))
 
 
-# ── Mapa de mòduls ────────────────────────────────────────────────────────────
+# moduls ordenats que es mostraran dins l'aplicatiu
 _MODULS = [
     ("Alta Pacient",        "👤", ACCENT,  _panel_alta_pacient),
     ("Alta Personal",       "🩺", TEAL,    _panel_alta_personal),
@@ -602,7 +637,7 @@ _MODULS = [
 ]
 
 
-# ── Finestra principal ─────────────────────────────────────────────────────────
+# funcio al obrir el menude manteniment desde el menu principal
 def obrir_manteniment():
     ctk.set_appearance_mode("dark")
     win = ctk.CTkToplevel()
@@ -613,7 +648,7 @@ def obrir_manteniment():
     win.lift()
     win.focus_force()
 
-    # ── Topbar ────────────────────────────────────────────────────────────
+    # la topbat
     topbar = ctk.CTkFrame(win, fg_color="#0a1120", corner_radius=0, height=52)
     topbar.pack(fill="x")
     topbar.pack_propagate(False)
@@ -624,11 +659,11 @@ def obrir_manteniment():
                   width=90, height=30, corner_radius=7,
                   font=("Arial", 11)).pack(side="right", padx=16, pady=11)
 
-    # ── Layout principal: sidebar + contingut ─────────────────────────────
+    #Layout principal: sidebar + contingut
     main = ctk.CTkFrame(win, fg_color="transparent")
     main.pack(fill="both", expand=True)
 
-    # Sidebar
+    # barra lateral
     sidebar = ctk.CTkFrame(main, fg_color=SIDEBAR, corner_radius=0, width=200,
                            border_width=0)
     sidebar.pack(side="left", fill="y")
@@ -637,7 +672,7 @@ def obrir_manteniment():
     ctk.CTkLabel(sidebar, text="MÒDULS", font=("Arial", 9, "bold"),
                  text_color=MUTED).pack(anchor="w", padx=16, pady=(16, 6))
 
-    # Àrea de contingut
+    #contingut on es mostra el texte
     content_wrapper = ctk.CTkFrame(main, fg_color=BG, corner_radius=0)
     content_wrapper.pack(side="left", fill="both", expand=True)
 
@@ -646,6 +681,7 @@ def obrir_manteniment():
 
     active_btn = [None]
 
+    #carregar el panell esquerra amb tots els panells disponibles
     def carregar_panel(build_fn, btn):
         # Ressaltar botó actiu
         if active_btn[0]:

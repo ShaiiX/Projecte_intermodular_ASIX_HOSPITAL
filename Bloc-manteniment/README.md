@@ -57,7 +57,7 @@ Es pot obtenir l'historial complet d'un pacient, com les seves visites realitzad
 
 ### Programació metges
 
-El metge podria veure les visites i operacons programades, com la disponibiliat. Així poder tenir una millor gestió del temps dels metges.
+El metge podria veure les visites i operacons programades, amb la seva data i hora, com la disponibiliat. Així poder tenir una millor gestió del temps dels metges.
 
 ## Top
 
