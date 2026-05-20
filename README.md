@@ -1,7 +1,7 @@
-# Projecte_intermodular_ASIX_HOSPITAL
+# HospiVibe
 
 <p align="center">
-  <img src="./Planificacio/HospiVibeLogo.png" alt="HospiVibe Logo" width="300">
+  <img src="./Planificacio/BannerHospiVibe.png" alt="HospiVibe Logo">
 </p>
 
 HospiVibe és un projecte de gestió hospitalària creat amb l’objectiu de facilitar l’organització d’un hospital d’una manera més còmoda i senzilla. L’aplicació permet administrar informació de pacients, personal mèdic i diferents serveis del centre.
