@@ -137,53 +137,113 @@ Renovació anual automàticament
 
 ## Data Masking
 
-Per protegir les dades sensibles i evitar mostrar informació real als usuaris sense permisos, s’ha implementat un sistema de data massking. Aquest sistema permet mostrar les dades de forma parcial o oculta (per exemple: w*****s@gmail.com), garantint la privacitat.
+Per protegir les dades sensibles i evitar mostrar informació real als usuaris sense permisos, s'ha implementat un sistema de data masking. Aquest sistema permet mostrar les dades de forma parcial o oculta (per exemple: `XXXXXX123`), garantint la privacitat.
 
-Aquesta funcionalitat es basa en una extensió de PostgreSql anomenada **anonymizer (anon)**.
+Aquesta funcionalitat es basa en una extensió de PostgreSQL anomenada **postgresql_anonymizer (anon)**.
+
+### Instal·lació
+
+L'extensió s'instal·la des del repositori oficial de Dalibo:
+
+```bash
+# Afegir el repositori
+curl https://apt.dalibo.org/labs/debian-dalibo.asc | sudo tee /etc/apt/trusted.gpg.d/dalibo.asc
+echo "deb https://apt.dalibo.org/labs noble-dalibo main" | sudo tee /etc/apt/sources.list.d/dalibo.list
+sudo apt update
+
+# Instal·lar per a PostgreSQL 18
+sudo apt install postgresql_anonymizer_18
+```
+
+> **Nota:** La versió instal·lada és la 3.x, que és la única disponible per a PostgreSQL 18. [Repositori del anon.](https://postgresql-anonymizer.readthedocs.io/en/stable/)
 
 ### Configuració
 
-Per utilitzar aquesta extensió, primer cal activar-la al fitxer de configuració del servidor:
+**1. Afegir l'extensió a `postgresql.conf`:**
 
-```
+```bash
 shared_preload_libraries = 'anon'
 ```
 
-Un cop reiniciat el servidor, s’activa a la base de dades amb:
+**2. Reiniciar PostgreSQL:**
 
+```bash
+sudo systemctl restart postgresql
 ```
-CREATE EXTENSION anon;
+
+**3. Activar l'extensió a la base de dades:**
+
+```sql
+CREATE EXTENSION IF NOT EXISTS anon CASCADE;
 SELECT anon.init();
-SELECT anon.start_dynamic_masking();
+```
+
+**4. Activar el Dynamic Masking transparent (específic de la v3):**
+
+```sql
+ALTER DATABASE <nom_DB> SET anon.transparent_dynamic_masking TO true;
+```
+
+Tancar la sessió i reconnectar per tal que el paràmetre tingui efecte.
+
+**5. Marcar el rol que veurà les dades enmascarades:**
+
+```sql
+SECURITY LABEL FOR anon ON ROLE infermer_role IS 'MASKED';
 ```
 
 ### Funcionament
 
-L’extensió permet definir regles de mascarament sobre columnes concretes. Quan es fa una Select les dades es mostren automàticament protegides segons el rol de l’usuari.
+L'extensió intercepta les consultes `SELECT` i substitueix les dades sensibles automàticament segons el rol de l'usuari que fa la consulta. Els rols marcats com a `MASKED` veuen les dades protegides; la resta veuen les dades reals.
 
-S’utilitza la funció `anon.mask_if` que aplica una màscara només si l’usuari no té permisos suficients.
+Les regles es defineixen amb `SECURITY LABEL` sobre cada columna sensible.
+
+### Regles de mascarament aplicades
+
+> **Important:** La màscara `anon.partial` ha de respectar la longitud màxima del camp. Per a camps `varchar(9)` com el DNI, s'utilitzen 6 caràcters de màscara + 3 visibles = 9 total.
+
+```sql
+-- Usuaris: contrasenya sempre oculta
+SECURITY LABEL FOR anon ON COLUMN seguretat.usuari.password
+IS 'MASKED WITH VALUE ''********''';
+
+-- Personal: DNI (6 X + 3 últims caràcters)
+SECURITY LABEL FOR anon ON COLUMN dades_per.personal.dni
+IS 'MASKED WITH FUNCTION anon.partial(dni, 0, ''XXXXXX'', 3)';
+```
+**Altres exemples dins de [datamasking.sql](./datamasking.sql)**
 
 ### Dades protegides
 
-S’han identificat com a dades sensibles les següents:
+S'han identificat com a dades sensibles les següents columnes:
 
-- seguretat.usuari.contrasenya
-- dades_per.personal.dni 
-- dades_per.personal.direccio
-- dades_per.personal.telefon
-- pacient.pacient.dni 
-- pacient.pacient.tarjeta_sanitaria
-- pacient.pacient.telefon
-- pacient.expedient.historial
-- pacient.expedient.observacions
-- pacient.visita.diagnostic
+- `seguretat.usuari.password`
+- `dades_per.personal.dni`
+- `dades_per.personal.direccio`
+- `dades_per.personal.telefon`
+- `pacient.pacient.dni`
+- `pacient.pacient.tarjeta_sanitaria`
+- `pacient.pacient.telefon`
+- `pacient.expedient.historial`
+- `pacient.expedient.observacions`
+- `pacient.visita.diagnostic`
 
 ### Control d'accés
 
-El data masking s’aplica als rols que no necessiten accedir a dades completes (**mínim privilegi**)
+El data masking s'aplica seguint el principi de **mínim privilegi**:
 
-- Admin i metge poden veure dades reals
-- Altres rols veuen dades enmascarades
+- `admin_role` i `metge_role` veuen les dades reals
+- `infermer_role` i altres rols sense privilegis veuen les dades enmascarades
+
+Per verificar que el masking funciona correctament, connectar-se amb el rol enmascarado i fer una consulta:
+
+```sql
+SET ROLE infermer_role;
+SELECT dni FROM pacient.pacient LIMIT 1;
+-- Resultat esperat: XXXXXX12A
+```
+
+>**Nomenglatura:** Ho podeu trovar dins la pàgina web 
 
 ## Normativa AGPD
 

@@ -25,7 +25,6 @@ CREATE TABLE seguretat.LOG_ACCESS (
     id_usuari INT REFERENCES seguretat.USUARI(id_usuari),
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     accio TEXT,
-    taula_afectada TEXT
 );
 
 CREATE TABLE seguretat.LOG_LIBRARY(
@@ -164,6 +163,7 @@ CREATE TABLE pacient.VISITA(
 CREATE TABLE pacient.PROVA(
     id_prova SERIAL PRIMARY KEY,
     id_visita INT REFERENCES pacient.VISITA(id_visita),
+    id_expedient INT REFERENCES pacient.EXPEDIENT(id_exp),
     tipus VARCHAR(50),
     resultat TEXT,
     estat VARCHAR(50),

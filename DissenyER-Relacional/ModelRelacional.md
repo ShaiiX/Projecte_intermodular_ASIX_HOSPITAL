@@ -1,4 +1,5 @@
 # Model Relacional
+
 ## 1. Gestió de Personal i Usuaris
 
 * **PERSONAL** (**id_personal**, dni, nom, cognom1, cognom2, data_naixement, adreça, email, telefon, baixa)
@@ -12,11 +13,15 @@
 * **USUARI** (**id_usuari**, nom_usuari, contrasenya, actiu, data_creacio, ultim_login, id_personal)
     * FK: `id_personal` REFERENCIA `PERSONAL(id_personal)`
 * **ROL** (**id_rol**, nom, descripcio)
-* **USUARI_PERTANY_ROL** (**id_usuari**, **id_rol**)
+* **USUARI_ROL** (**id_usuari**, **id_rol**)
     * FK: `id_usuari` REFERENCIA `USUARI(id_usuari)`
     * FK: `id_rol` REFERENCIA `ROL(id_rol)`
-* **LOG_ACCES** (**id_log**, data, accio, id_registre, taula_afectada, posicio_log, id_usuari)
+* **LOG_ACCES** (**id_log**, data, accio, id_usuari)
     * FK: `id_usuari` REFERENCIA `USUARI(id_usuari)`
+* **LOG_LIBRARY** (**id_library**, query_text)
+* **LOG_DETALL** (**id_detall**, id_log, id_library, id_registre, taula_afectada, dades)
+    * FK: `id_log` REFERENCIA `LOG_ACCES(id_log)`
+    * FK: `id_library` REFERENCIA `LOG_LIBRARY(id_library)`
 
 ## 2. Gestió de Pacients i Activitat Clínica
 
@@ -26,9 +31,20 @@
 * **VISITA** (**id_visita**, data, diagnostic, id_pacient, id_metge)
     * FK: `id_pacient` REFERENCIA `PACIENT(id_pacient)`
     * FK: `id_metge` REFERENCIA `METGE(id_personal)`
-* **PROVA** (**id_prova**, tipus, data, resultat, estat, id_visita)
+* **PROVA** (**id_prova**, tipus, data, resultat, estat, id_visita, id_expedient)
     * FK: `id_visita` REFERENCIA `VISITA(id_visita)`
-
+    * FK: `id_expedient` REFERENCIA `EXPEDIENT(id_exp)`
+* **MEDICAMENT** (**id_medicament**, nom, descripcio, cost)
+* **RECEPTA** (**id_sortida**, data, import_total, descripcio)
+* **LINEA_RECEPTA** (**id_linea**, quantitat, preu_u, cost, id_sortida, id_medicament)
+    * FK: `id_sortida` REFERENCIA `RECEPTA(id_sortida)`
+    * FK: `id_medicament` REFERENCIA `MEDICAMENT(id_medicament)`
+* **RECEPTA_VISITA** (**id_sortida**, **id_visita**)
+    * FK: `id_sortida` REFERENCIA `RECEPTA(id_sortida)`
+    * FK: `id_visita` REFERENCIA `VISITA(id_visita)`
+* **RECEPTA_INGRES** (**id_sortida**, **id_ingres**)
+    * FK: `id_sortida` REFERENCIA `RECEPTA(id_sortida)`
+    * FK: `id_ingres` REFERENCIA `INGRES(id_ingres)`
 
 ## 3. Infraestructura i Equipament
 
@@ -37,22 +53,20 @@
     * FK: `id_planta` REFERENCIA `PLANTA(id_planta)`
 * **QUIROFAN** (**id_planta**, **num_quirofan**, estat)
     * FK: `id_planta` REFERENCIA `PLANTA(id_planta)`
-* **APARELL_MEDIC** (**id_aparell**, num_serie, marca, model, tipus, data_manteniment, id_planta num_quirofan)
+* **TIPUS** (**id_tipus**, tipus, model, marca)
+* **APARELL_MEDIC** (**id_aparell**, num_serie, data_manteniment, id_tipus, id_planta, num_quirofan)
+    * FK: `id_tipus` REFERENCIA `TIPUS(id_tipus)`
     * FK: `(id_planta, num_quirofan)` REFERENCIA `QUIROFAN(id_planta, num_quirofan)`
-* **OPERACIO** (**id_operacio**, data, tipus_operacio, estat, descripcio, id_pacient, id_metge, id_planta num_quirofan)
+* **OPERACIO** (**id_operacio**, data, tipus_operacio, estat, descripcio, id_pacient, id_personal, id_planta, num_quirofan)
     * FK: `id_pacient` REFERENCIA `PACIENT(id_pacient)`
-    * FK: `id_metge` REFERENCIA `METGE(id_personal)`
+    * FK: `id_personal` REFERENCIA `METGE(id_personal)`
     * FK: `(id_planta, num_quirofan)` REFERENCIA `QUIROFAN(id_planta, num_quirofan)`
 
-## 4. Ingressos i Farmàcia
+## 4. Ingressos
 
 * **INGRES** (**id_ingres**, data_ingres, data_sortida_prevista, data_sortida_real, id_pacient, id_habitacio)
     * FK: `id_pacient` REFERENCIA `PACIENT(id_pacient)`
     * FK: `id_habitacio` REFERENCIA `HABITACIO(id_habitacio)`
-* **MEDICAMENT** (**id_medicament**, nom, descripcio)
-* **FARMACIA** (**id_sortida**, data, import_total, descripcio, id_ingres)
-    * FK: `id_ingres` REFERENCIA `INGRES(id_ingres)`
-
 
 ## 5. Serveis Externs i Altres
 
@@ -60,14 +74,8 @@
 * **FACTURACIO_CANTINA** (**id_tiquet**, data, import_total, import_lloguer, percentatge, id_empresa)
     * FK: `id_empresa` REFERENCIA `EMPRESA_EXTERNA(id_empresa)`
 
-
 ## 6. Taules Auxiliars de Relació (N:M)
-* **FARMACIA_MEDICAMENT** (**id_sortida**, **id_medicament**, quantitat, preu_u, cost)
-    * FK: `id_sortida` REFERENCIA `FARMACIA(id_sortida)`
-    * FK: `id_medicament` REFERENCIA `MEDICAMENT(id_medicament)`
-* **VISITA_MEDICAMENT** (**id_visita**, **id_medicament**, quantitat, descripcio)
-    * FK: `id_visita` REFERENCIA `VISITA(id_visita)`
-    * FK: `id_medicament` REFERENCIA `MEDICAMENT(id_medicament)`
+
 * **EQUIP_OPERACIO** (**id_operacio**, **id_infermer**, rol)
     * FK: `id_operacio` REFERENCIA `OPERACIO(id_operacio)`
     * FK: `id_infermer` REFERENCIA `INFERMER(id_personal)`
