@@ -5,6 +5,11 @@ import menu_consultes #importem el menu de consultes del sistema
 import menu_usuaris # importem el menu de usuaris per a poder gestionar-los
 import threading 
 from datetime import date
+import os, sys
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
 # Paleta de color de l'aplicació
 COLORS = {
@@ -63,6 +68,8 @@ def obrir_menu(rol):
     f.geometry("860x620")
     f.resizable(True, True)
     f.configure(fg_color=COLORS["bg_dark"])
+    icon_path = resource_path(os.path.join("logo", "logo.ico"))
+    f.after(201, lambda: f.iconbitmap(icon_path))
 
     # capçelera
     header = ctk.CTkFrame(f, fg_color=COLORS["bg_card"], corner_radius=0, height=64)
@@ -72,7 +79,7 @@ def obrir_menu(rol):
     # titol principal amb logo
     try:
         from PIL import Image
-        img_original = Image.open("AplicacioSenceraProg/Logo/logo.png")
+        img_original = Image.open(resource_path(os.path.join("logo", "logo.png")))
         img_ctk = ctk.CTkImage(light_image=img_original, dark_image=img_original, size=(40, 40))
         logo_lbl = ctk.CTkLabel(header, image=img_ctk, text="")
         logo_lbl.image = img_ctk  # referència per evitar garbage collector

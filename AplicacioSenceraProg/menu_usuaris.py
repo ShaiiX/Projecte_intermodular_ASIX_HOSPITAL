@@ -1,6 +1,12 @@
 import customtkinter as ctk #importem el customtkinter per a la seva visualització
 from db import connectar #importem la conexió amb la base de dades
 
+import os, sys
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
+
 # Paleta de color de l'aplicació
 COLORS = {
     "bg_dark":      "#0f1623",
@@ -24,7 +30,8 @@ def gestio_usuaris():
     g.configure(fg_color=C["bg_dark"])
     g.lift()
     g.focus_force()
-
+    icon_path = resource_path(os.path.join("logo", "logo.ico"))
+    g.after(201, lambda: g.iconbitmap(icon_path))
     # Topbar
     topbar = ctk.CTkFrame(g, fg_color=C["bg_card"], corner_radius=0, height=52)
     topbar.pack(fill="x")

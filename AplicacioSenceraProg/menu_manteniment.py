@@ -9,6 +9,11 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from tkinter import filedialog
 
+import os, sys
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
 # paleta de colors del menu:
 BG      = "#0d1422"
@@ -647,7 +652,8 @@ def obrir_manteniment():
     win.configure(fg_color=BG)
     win.lift()
     win.focus_force()
-
+    icon_path = resource_path(os.path.join("logo", "logo.ico"))
+    win.after(201, lambda: win.iconbitmap(icon_path))
     # la topbat
     topbar = ctk.CTkFrame(win, fg_color="#0a1120", corner_radius=0, height=52)
     topbar.pack(fill="x")

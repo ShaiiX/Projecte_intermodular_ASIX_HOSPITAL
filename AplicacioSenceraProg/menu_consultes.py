@@ -1,6 +1,11 @@
 import customtkinter as ctk #importem el customtkinter per al menu grafic
 from db import connectar #importem la conexio amb la base de dades
 from consultes import informe_planta, informe_personal, informe_visites_dia, ranking_metges #importem les consultes necesaries de consultes.py
+import os, sys
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
 #paleta de colors del menu
 BG      = "#0d1422"
@@ -239,7 +244,8 @@ def obrir_consultes():
     win.configure(fg_color=BG)
     win.lift()
     win.focus_force()
-
+    icon_path = resource_path(os.path.join("logo", "logo.ico"))
+    win.after(201, lambda: win.iconbitmap(icon_path))
     # barra superior
     topbar = ctk.CTkFrame(win, fg_color=SIDEBAR, corner_radius=0, height=52)
     topbar.pack(fill="x")
