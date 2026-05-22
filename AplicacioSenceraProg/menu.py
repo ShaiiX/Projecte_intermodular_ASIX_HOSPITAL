@@ -69,13 +69,23 @@ def obrir_menu(rol):
     header.pack(fill="x", side="top")
     header.pack_propagate(False)
 
-    # titol principal
+    # titol principal amb logo
+    try:
+        from PIL import Image
+        img_original = Image.open("AplicacioSenceraProg/Logo/logo.png")
+        img_ctk = ctk.CTkImage(light_image=img_original, dark_image=img_original, size=(40, 40))
+        logo_lbl = ctk.CTkLabel(header, image=img_ctk, text="")
+        logo_lbl.image = img_ctk  # referència per evitar garbage collector
+        logo_lbl.pack(side="left", padx=(28, 6), pady=12)
+    except Exception as e:
+        print(f"Error carregant logo: {e}")
+
     ctk.CTkLabel(
         header,
-        text="🏥  Hospivibe",
+        text="Hospivibe",
         font=ctk.CTkFont(family="Georgia", size=22, weight="bold"),
         text_color=COLORS["text_main"],
-    ).pack(side="left", padx=28, pady=16)
+    ).pack(side="left", padx=(0, 28), pady=16)
 
     # mostra el rol de l'usuari actual
     rol_badge_color = COLORS["accent"] if rol == "admin" else COLORS["accent3"]
