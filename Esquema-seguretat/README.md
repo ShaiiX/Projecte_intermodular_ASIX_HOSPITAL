@@ -275,7 +275,7 @@ Aquest logs seràn basicament WAL, es un sistema que a més de replica dades en 
 
 - La segona part es sobre tenir coneixement del que es fa, per a seguretat i auditoria, es guarda dins la base de dades, per a tenir access directe i facil desde la aplicació o exportació si es el cas, si es fa un Import, Update o Delete que es repeteix molt, encomptes de guardar totes les dades s'haura de normalitzar aquestes mateixes consultes.
 
-Un cop això ja es pot indicar el trigger, que es trova a Triggers/LOG_AUDITORIA.sql.
+Un cop això ja es pot indicar el trigger, que es trova a [logs/LOG_AUDITORIA.sql](./logs/LOG_AUDITORIA.sql).
 
 Perque no s'utilitza directament el pg_stat_statements, que fa la mateixa funció? 
 - Es volatil, vol dir que aquesta informacio si es reinicia el servidor o altres inconvenients pot arrivar a sobrecargar sistema si es el cas o perdre el registre de les comandes.
@@ -284,8 +284,8 @@ Perque no s'utilitza directament el pg_stat_statements, que fa la mateixa funci�
 Per això s'utilitzara en una taula amb aquestes matiexes dades de forma simplificada.
 
 ### Login
-Quan un usuari estableix una conexió amb la base de dades sera interesant guardar-ho dins de la base de dades a log_access sense detall, ja que nomes es una conexió, per fer això s'hauria de modificar el .py ja que desde així podem indicar que sa establert la conexió.
-On cada inici obtindra l'identificador de l'usuari i ho afegira com a registre dins la base de dades.
+Quan un usuari estableix una conexió amb la base de dades sera interesant guardar quan ha estat la utlima conexió, per fer això s'hauria de modificar el .py ja que desde així podem indicar que sa establert la conexió.
+On cada inici obtindra l'identificador de l'usuari i modificara el registre dins la base de dades.
 [login.sql](/Esquema-seguretat/logs/usuaris/Login.sql)
 
 Per a indicar i mantenir l'activiat de l'usuari, on cada acció que faci l'usuari al sistema amb la base de dades s'haura de actualitzar el registre:
