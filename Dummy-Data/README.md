@@ -42,7 +42,7 @@ Una petita part de la informació s’ha generat en alfabet ciríl·lic per vali
 
 La generació de dades s’ha fet amb Python des de l’aplicació, dins el mòdul:
 
-`AplicacioSenceraProg/moduls/dummy_data.py`
+`AplicacioSenceraProg/dummy_data.py`
 
 El sistema crea les dades de forma automàtica utilitzant la llibreria `Faker` per generar noms, cognoms, telèfons, adreces i dates de naixement realistes.
 
