@@ -186,6 +186,21 @@ Especificacions de l'estructura que té el sistema del servidor.
 
 Separar `/var/lib/postgresql` evita que si hi ha problemes del sistema puguin afectar la base de dades. Els logs es separen per evitar que omplin el disc principal i provoquin errors. Els fitxers WAL en un disc separat milloren el rendiment i permeten una recuperació més eficient en cas de fallada.
 
+### Tipus de disc
+
+| Punt de muntatge | Tipus de disc | Capacitat recomanada | Justificació |
+|---|---|---|---|
+| `/` | SSD SATA | 100 GB | Aquí està el sistema operatiu Linux. Amb un SSD el sistema arrenca més ràpid i funciona millor. |
+| `/var` | SSD SATA | 150 GB | En aquesta partició es guarden logs i dades del sistema. Necessita espai perquè els logs poden ocupar bastant amb el temps. |
+| `/var/lib/postgresql` | SSD NVMe RAID 1 | 1 TB | És on es guarda tota la base de dades. Es necessita molta velocitat perquè PostgreSQL fa moltes lectures i escriptures constants. El RAID 1 permet que si falla un disc no es perdin les dades. |
+| `/var/log/postgresql` | SSD SATA | 50 GB | Aquí es guarden els logs de PostgreSQL. Un SSD ajuda perquè s’escriuen dades constantment. |
+| `/backup` | HDD NAS RAID 5 | 4 TB | Aquesta partició és per guardar les còpies de seguretat. Es prioritza tenir molt espai i redundància abans que velocitat. |
+| `/var/lib/postgresql/15/main` | SSD NVMe | Inclòs dins del TB principal | És el directori principal intern de PostgreSQL on estan les dades, índexs i taules. Necessita molt rendiment. |
+| `/var/lib/postgresql/wal` | SSD NVMe independent | 250 GB | Aquí es guarden els fitxers WAL. Com que PostgreSQL escriu constantment en aquests arxius, un disc separat millora molt el rendiment i la recuperació. |
+| `/etc/postgresql` | SSD SATA | 10 GB | Conté els fitxers de configuració de PostgreSQL. No ocupa gaire espai però és important tenir accés ràpid. |
+| `/tmp` | SSD SATA | 50 GB | Serveix per fitxers temporals del sistema i de PostgreSQL. Amb SSD les operacions temporals van més ràpid. |
+| `/home` | HDD o SSD SATA | 200 GB | Aquí es guarden els arxius dels usuaris i administradors. No necessita tanta velocitat com la base de dades. |
+
 ## Estructura de fitxers de Postgres
 
 Directori principal /var/lib/postgresql/15/main : conté els fitxers de dades, la configuració interna.
