@@ -4,6 +4,11 @@ import funcions # importar funcions
 import menu #importar el menu per obrir despres del login
 import time # per gestionar el cooldown i bloqueig de login
 import config # configuració global (mode clar/oscur)
+import os, sys
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
 # configuració visual amb customtkinter
 ctk.set_appearance_mode(config.mode_app)    # mode clar o fosc segons config
@@ -20,20 +25,22 @@ mostrar_contrasenya = False
 app = ctk.CTk()
 app.title("Hospital - Login")   # titol
 app.geometry("600x720") # mida
+icon_path = resource_path(os.path.join("logo", "logo.ico"))
+app.iconbitmap(icon_path) 
 
 # frame principal que conté tots els elements del login
 frame = ctk.CTkFrame(app, corner_radius=25) # bores arredonides
 frame.pack(pady=60, padx=60, fill="both", expand=True)  # centrat i amb espai al voltant
 
-# imatge del títol (redimensionada per no ocupar massa espai)
+# imatge del títol
 try:
     from PIL import Image
-    img_original = Image.open("AplicacioSenceraProg/Logo/HospiVibeLogoPNG.png")
-    img_ctk = ctk.CTkImage(light_image=img_original, dark_image=img_original, size=(150, 150))
+    img_original = Image.open(resource_path(os.path.join("logo", "logotext.png")))
+    img_ctk = ctk.CTkImage(light_image=img_original, dark_image=img_original, size=(230, 230))
     titol = ctk.CTkLabel(frame, image=img_ctk, text="")
-    titol.image = img_ctk   # guardar referència per evitar que el garbage collector l'elimini
+    titol.image = img_ctk  # referència per evitar garbage collector
 except Exception as e:
-    print(f"Error carregant imatge: {e}")   # mostra l'error a la consola per depurar
+    print(f"Error carregant imatge: {e}")
     titol = ctk.CTkLabel(
         frame,
         text="Hospital Login",
