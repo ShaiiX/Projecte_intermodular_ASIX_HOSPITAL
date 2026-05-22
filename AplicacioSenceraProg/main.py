@@ -19,19 +19,27 @@ mostrar_contrasenya = False
 # finestra principal de login
 app = ctk.CTk()
 app.title("Hospital - Login")   # titol
-app.geometry("600x520") # mida
+app.geometry("600x720") # mida
 
 # frame principal que conté tots els elements del login
 frame = ctk.CTkFrame(app, corner_radius=25) # bores arredonides
 frame.pack(pady=60, padx=60, fill="both", expand=True)  # centrat i amb espai al voltant
 
-# etiqueta del títol
-titol = ctk.CTkLabel(
-    frame,
-    text="Hospital Login",  # text que es mostra
-    font=ctk.CTkFont(size=32, weight="bold")    # font més gran i en negreta
-)
-titol.pack(pady=(30, 20))   # espai entre el títol i els inputs
+# imatge del títol (redimensionada per no ocupar massa espai)
+try:
+    from PIL import Image
+    img_original = Image.open("AplicacioSenceraProg/Logo/HospiVibeLogoPNG.png")
+    img_ctk = ctk.CTkImage(light_image=img_original, dark_image=img_original, size=(150, 150))
+    titol = ctk.CTkLabel(frame, image=img_ctk, text="")
+    titol.image = img_ctk   # guardar referència per evitar que el garbage collector l'elimini
+except Exception as e:
+    print(f"Error carregant imatge: {e}")   # mostra l'error a la consola per depurar
+    titol = ctk.CTkLabel(
+        frame,
+        text="Hospital Login",
+        font=ctk.CTkFont(size=32, weight="bold")
+    )
+titol.pack(pady=(30, 20))
 
 # input usuari
 entry_user = ctk.CTkEntry(
