@@ -225,4 +225,4 @@ Gestió de logs a /var/log/postgresql/ serán errors del servidor, connexions.
 
 ---
 
-[PDF Manual d'instal·lació i configuració](./Manual-instalacio-configuracio.pdf)
+[PDF Manual d'instal·lació i configuració](../Documentacio/Hospivibe-Manual-Instalacio.pdf)
