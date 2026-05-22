@@ -108,7 +108,7 @@ Utilitzem el scram-sha-256 perquè és més segur i el md5 està obsolet.
 
 Límit de validesa del certificat de 365 dies. Script manual:
 
-```
+```bash
 #!/bin/bash
 
 openssl genrsa -out /var/lib/postgresql/server.key 2048
@@ -123,7 +123,7 @@ systemctl restart postgresql
 
 Donar permisos:
 
-```
+```bash
 chmod +x /usr/local/bin/script_ssl.sh
 ```
 
@@ -211,7 +211,7 @@ IS 'MASKED WITH VALUE ''********''';
 SECURITY LABEL FOR anon ON COLUMN dades_per.personal.dni
 IS 'MASKED WITH FUNCTION anon.partial(dni, 0, ''XXXXXX'', 3)';
 ```
-**Altres exemples dins de [datamasking.sql](./datamasking.sql)**
+>**Altres exemples dins de [datamasking.sql](./datamasking.sql)**
 
 ### Dades protegides
 

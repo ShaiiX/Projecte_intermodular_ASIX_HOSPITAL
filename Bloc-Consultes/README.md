@@ -19,6 +19,8 @@ Aquest informe permet:
 - Controlar la distribució del personal
 - Facilitar la gestió interna de l’hospital
 
+>[Informe planta](./info-planta.sql).
+
 ### INFORME: Tot el personal
 Es vol un informe amb les dades completes de tot el personal.
 
@@ -28,6 +30,8 @@ Aquest informe és útil per:
 - Recursos humans
 - Administració
 - Gestió interna del personal
+
+>[Informe personal](./informe-tot-personal.sql).
 
 ### INFORME: Nombre de visites
 
@@ -39,6 +43,8 @@ Permet:
 - Controlar l’activitat diària de l’hospital
 - Detectar moments de més càrrega assistencial
 - Obtenir estadístiques de funcionament
+
+>[Informe visites](./informe-nombre-visites.sql).
 
 ## Opcional
 ### Ranking de metges
@@ -52,3 +58,5 @@ Mitjançant les dades de les visites registrades es comptabilitzaran les atencio
 - Analitzar la càrrega de treball
 - Detectar possibles saturacions
 - Obtenir estadístiques internes de rendiment
+
+>[Informe metges](./ranking-metges.sql).

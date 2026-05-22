@@ -28,7 +28,7 @@ JOIN dades_per.METGE m ON v.id_personal = m.id_personal
 JOIN dades_per.PERSONAL p_met ON m.id_personal = p_met.id_personal
 JOIN pacient.PACIENT p_pac ON v.id_pacient = p_pac.id_pacient;
 
--- Vista d'Inventari
+-- Vista d'Inventari (TOP)
 CREATE OR REPLACE VIEW estructura.vista_inventari_quirofans AS
 SELECT 
     q.id_planta,
@@ -129,17 +129,17 @@ GROUP BY p.id_pacient, p.nom, p.cognoms;
 -- opcional3:
 CREATE OR REPLACE VIEW dades_per.vista_metge_programacio AS
 SELECT
-    m.id_personal                                                         AS id_metge,
-    p_metge.nom                                                           AS nom_metge,
-    p_metge.cognom1                                                       AS cognom1_metge,
-    p_metge.cognom2                                                       AS cognom2_metge,
-    COALESCE(DATE(v.data), DATE(o.data))                  AS dia,
+    m.id_personal AS id_metge,
+    p_metge.nom AS nom_metge,
+    p_metge.cognom1 AS cognom1_metge,
+    p_metge.cognom2 AS cognom2_metge,
+    COALESCE(DATE(v.data), DATE(o.data)) AS dia,
     CASE
         WHEN v.id_visita   IS NOT NULL THEN 'Visita'
         WHEN o.id_operacio IS NOT NULL THEN 'Operació'
-    END                                                                   AS tipus,
-    COALESCE(v.data::TIME, o.data::TIME)::time(0)                 AS hora,
-    CONCAT(p_pac.nom, ' ', p_pac.cognoms)                                 AS pacient
+    END AS tipus,
+    COALESCE(v.data::TIME, o.data::TIME)::time(0) AS hora,
+    CONCAT(p_pac.nom, ' ', p_pac.cognoms) AS pacient
 FROM dades_per.personal p_metge
 JOIN dades_per.METGE m
     ON m.id_personal = p_metge.id_personal

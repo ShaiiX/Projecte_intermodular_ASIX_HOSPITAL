@@ -45,14 +45,14 @@ També es faran servir llibreries per facilitar la connexió amb la base de dade
 L'organització dels fitxers serà de la següent manera per mantenir l'ordpre del programa:
 
 Directori bloc/
-- db.py
-- menu.py
-- main.py
-- funcions.py
-- autenticacio.py
-- config.py
+- [db.py](../AplicacioSenceraProg/db.py)
+- [menu.py](../AplicacioSenceraProg/menu.py)
+- [main.py](../AplicacioSenceraProg/main.py)
+- [funcions.py](../AplicacioSenceraProg/funcions.py)
+- [autenticacio.py](../AplicacioSenceraProg/autentificacio.py)
+- [config.py](../AplicacioSenceraProg/config.py)
 
-Al **fitxer db.py** és la connexió a la base de dades de PostgreSQL.
+Al fitxer **db.py** és la connexió a la base de dades de PostgreSQL.
 
 El **menu.py** és el menú principal, hi han 2 menus, el primer serà d'admin i el segon d'usuari.
 

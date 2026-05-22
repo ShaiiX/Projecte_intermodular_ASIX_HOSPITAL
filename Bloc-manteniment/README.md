@@ -1,5 +1,8 @@
 # Bloc de manteniment
 
+> Es pot observar la seva configuració dins de l'aplicació sencera amb: [menu_manteniment.py](../AplicacioSenceraProg/menu_manteniment.py) i [consultes.py](../AplicacioSenceraProg/consultes.py).
+
+>També estan les consultes sql dins de [sql](./sql).
 ## Funcionament
 
 ### Alta de personal dels treballadors perquè puguin estar registrats al centre
